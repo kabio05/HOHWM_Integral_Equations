@@ -60,6 +60,8 @@ developed for finding numerical solutions of integral equations. Examples includ
 
 The wavelet is a mathematical function used to divide a target function over an interval into different scale components. There are a wide range of various wavelet transforms suitable for different application. In particular, Haar wavelet (HWM) is a common and well-known wavelet basis. Haar wavelets are the simplest orthonormal wavelet with compact support and they have been used in different numerical approximation problems.[^6] The problem of Haar wavelet is that it is slow to converge for numerical approximation. To improve the convergence rate of Haar wavelet, a method called Higher order Haar wavelet method (HOHWM) was introduced. [^3] HOHWN transform the integral functions into a system of linear/nonlinear algebraic equations. In this project, we will focus on applying HOHWM on the Fredholm and Volterra Integral Equations and develop an efficient iterative solver to solve the arising linear system. 
 
+## Main
+
 ### The Definition of Haar wavelet functions
 
 The Haar wavelet family defined on the interval $[a, b)$ consists of the following functions: [^4]
@@ -82,7 +84,7 @@ $$
 \xi_{1} = a + (b-a)\frac{k}{m}, \quad \xi_2 = a + (b-a)\frac{k+0.5}{m}, \quad \xi_{3} = a + (b-a)\frac{(k+1)}{m}; \\
 m = 2^{j}, \quad j = 0,1, \ldots, J, \ J=2^{M},\quad k= 0, 1, \ldots, m-1, \quad i = 2,3, \ldots,2M.
 $$
-The integer j indicates the level of the wavelet and k is the translation parameter. The maximal level of resolution is $J$ . The relation between $i$, $m$ and $k$ is given by $i = m + k + 1$. The function $h_1(x)$ is called scaling function whereas $h_2(x)$ is the mother wavelet for the Haar wavelet family.
+The integer j indicates the level of the wavelet and k is the translation parameter. The maximal level of resolution is $J$ . The relation between $i$, $m$ and $k$ is given by $i = m + k + 1$. The function $h_1(x)$ is called scaling function whereas $h_2(x)$ is the mother wavelet for the Haar wavelet family. The parameter $m = 2j $ $ (M = 2J)$ corresponds to a maximum number of square waves can be sequentially deployed in interval $[a,b)$ and the parameter $k$ indicates the location of the particular square wave.[^3]
 
 <img src="C:\Users\Yi Zong\Desktop\M4R_Files\M4R_CODE\Haars.png" style="zoom:25%;" />
 
@@ -112,13 +114,21 @@ f(x) = \sum^{\infty}_{i = 1} a_{i}h_{i}(x).
 $$
 An essential shortcoming of the Haar wavelets is that they are not continuous. The derivatives do not exist in the points of discontinuity, therefore it is not possible to apply the Haar wavelets directly to solving differential equations. [^4]
 
-Another possibility was proposed by Chen and Hsiao [^7][^8]. They recommended to expand into the Haar series not the function itself, but its highest derivative appearing in the differential equation; the other derivatives (and the function) are obtained through integrations. All these ingredients are then incorporated into the whole system, discretized by the Galerkin or collocation method.
+A method to solve this problem was proposed by Chen and Hsiao [^7][^8]. They recommended to expand into the Haar series not the function itself, but its highest derivative appearing in the differential equation; the other derivatives (and the function) are obtained through integrations. All these ingredients are then incorporated into the whole system, discretized by the Galerkin or collocation method.
 
 Chen and Hsiao demonstrated the possibilities of their method by solving linear systems of ordinary differential equations (ODEs) and partial differential equations (PDEs). This method was introduced by Lepik as a method called Higher order Haar wavelet method (HOHWM)[^4]. We will try to apply this method into the integral functions.
 
-### Application of the Higher order Haar wavelet method (HOHWM) 
+### The Higher order Haar wavelet method (HOHWM) 
 
-
+For the HOHWM, we consider the $sth$ derivative of the unknown function $u(x)$ as an approximation of the sum of Haar wavelets[^5]
+$$
+\frac{d^{s}u(x)}{dx^{s}} = \sum^{N}_{i=1} a_{i}h_{i}(x), \quad s = 1,2,\ldots,
+$$
+where $a_{i}$, $i = 1,2,\ldots,N$ are N unknown constants. The function $u(x)$ is obtains by integrating the summation $s$ times, which will lead to additional s constants. To calculate the Haar coefficients we consider the collocation points 
+$$
+x_{k} =  a + (b-a)\frac{k-0.5}{N}, \quad k = 1,2,\ldots,N.
+$$
+By substitution for the Haar wavelets with the integral equation and using the above collocation points for discretization, we will get an $N \times (N+s)$ linear or nonlinear system, which can be solved by the linear solver. 
 
 ### Numerical methods (Newton/Broyden method)
 
