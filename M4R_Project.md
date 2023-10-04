@@ -9,7 +9,7 @@ $$
 u(x) = f(x) + \int^{\beta(x)}_{\alpha(x)} K(x,t)\Phi(u(t))dt,
 $$
 
-where $u(x)$ is an unknown function called the solution of the integral equation, $K(x,t)$ is called the kernel of the integral equation, and $\Phi, \alpha, \beta, f$ are given functions.
+where $u(x)$ is an unknown function called the solution of the integral equation, $K(x,t)$ is called the kernel of the integral equation, and $K, \Phi, \alpha, \beta, f$ are given functions.
 
 In this project, we are mainly interested in two types of integral equations, [^2]
 
