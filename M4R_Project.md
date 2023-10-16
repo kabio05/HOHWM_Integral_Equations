@@ -142,8 +142,8 @@ $$
 For convenience, we introduce the notation:
 $$
 \begin{align*}
-& A = p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\\ 
-& B = 1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})
+& A := p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\\ 
+& B := 1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})
 \end{align*}
 $$
 Note that A is an $N \times N$ matrix and B is an N-vector. Then we have
@@ -157,14 +157,21 @@ $$
 $$
 And we find LHS is in the form $\text{Matrix} \times \text{vector}$, then the problem become an least square problem.
 
-Expand $A + \frac{S_{1}(j)}{1-S_{2}}B$, we have
+Call
 $$
+C := A + \frac{S_{1}(j)}{1-S_{2}}B
+$$
+
+
+Expand $C$, we have
+$$
+C = 
 p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k}) + \frac{S_{1}(j)}{1-S_{2}}\left(1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\right)
 $$
 
 $$
-\Longrightarrow
-p_{j,1}(x_{i})
+
+C = p_{j,1}(x_{i})
 +\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
 + \left(
 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})+
@@ -173,15 +180,15 @@ p_{j,1}(x_{i})
 $$
 
 $$
-\Longrightarrow
-p_{j,1}(x_{i})
+
+C = p_{j,1}(x_{i})
 +\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
 + \left[
 \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\left(\frac{S_{1}(j)}{1-S_{2}} - p_{j,1}(t_{k})\right)
 \right]
 $$
 
-where $\mathbb{1}$ is an $N \times 1$ vector. We show that $A + \frac{S_{1}(j)}{1-S_{2}}B$ is exactly a matrix.
+where $\mathbb{1}$ is an $N \times 1$ vector. We show that $C$ is exactly a matrix.
 
 ## Reference
 
