@@ -130,9 +130,58 @@ x_{k} =  a + (b-a)\frac{k-0.5}{N}, \quad k = 1,2,\ldots,N.
 $$
 By substitution for the Haar wavelets with the integral equation and using the above collocation points for discretization, we will get an $N \times (N+s)$ linear or nonlinear system, which can be solved by the linear solver. 
 
-### Numerical methods (Newton/Broyden method)
+### Numerical implementation
 
+$$
+\sum^{N}_{j=1}a_{j}\left(p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\right)\\
+= f(x_{i}) - \frac{1}{1-S_{2}}
+\left(1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\right)
+\left(f(0) + \sum^{N}_{j=1}a_{j}S_{1}(j)\right), \quad i = 1,2,...N.
+$$
 
+For convenience, we introduce the notation:
+$$
+\begin{align*}
+& A = p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\\ 
+& B = 1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})
+\end{align*}
+$$
+Note that A is an $N \times N$ matrix and B is an N-vector. Then we have
+$$
+\sum^{N}_{j = 1}a_{j} A + \frac{1}{1-S_{2}} B \sum^{N}_{j=1}a_{j}S_{1}{(j)}\\
+= f(x_{i}) - \frac{f(0)}{1-S_{2}}B
+$$
+And we find RHS is an N-vector. Since the summation can be exchanged, we have
+$$
+\text{LHS} = \sum^{N}_{j = 1} a_{j}\left[ A + \frac{S_{1}(j)}{1-S_{2}}B  \right ]
+$$
+And we find LHS is in the form $\text{Matrix} \times \text{vector}$, then the problem become an least square problem.
+
+Expand $A + \frac{S_{1}(j)}{1-S_{2}}B$, we have
+$$
+p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k}) + \frac{S_{1}(j)}{1-S_{2}}\left(1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\right)
+$$
+
+$$
+\Longrightarrow
+p_{j,1}(x_{i})
++\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
++ \left(
+- \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})+
+\frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\frac{S_{1}(j)}{1-S_{2}}
+\right)
+$$
+
+$$
+\Longrightarrow
+p_{j,1}(x_{i})
++\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
++ \left[
+\frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\left(\frac{S_{1}(j)}{1-S_{2}} - p_{j,1}(t_{k})\right)
+\right]
+$$
+
+where $\mathbb{1}$ is an $N \times 1$ vector. We show that $A + \frac{S_{1}(j)}{1-S_{2}}B$ is exactly a matrix.
 
 ## Reference
 
