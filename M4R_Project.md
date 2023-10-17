@@ -170,25 +170,34 @@ p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k}) + \frac{S
 $$
 
 $$
-
 C = p_{j,1}(x_{i})
 +\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
-+ \left(
-- \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})+
+- \left(
+ \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})+
 \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\frac{S_{1}(j)}{1-S_{2}}
 \right)
 $$
 
 $$
-
 C = p_{j,1}(x_{i})
 +\mathbb{1}\frac{S_{1}(j)}{1-S_{2}}
-+ \left[
-\frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\left(\frac{S_{1}(j)}{1-S_{2}} - p_{j,1}(t_{k})\right)
+- \left[
+\frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\left(p_{j,1}(t_{k}) + \frac{S_{1}(j)}{1-S_{2}} \right)
 \right]
 $$
 
 where $\mathbb{1}$ is an $N \times 1$ vector. We show that $C$ is exactly a matrix.
+
+Define
+$$
+D := p_{j,1}(x_{i}) \\
+E := \mathbb{1}\frac{S_{1}(j)}{1-S_{2}}\\
+F :=  \left[
+\frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\left(\frac{S_{1}(j)}{1-S_{2}} - p_{j,1}(t_{k})\right)
+\right] \\
+C = D + E + F
+$$
+
 
 ## Reference
 
