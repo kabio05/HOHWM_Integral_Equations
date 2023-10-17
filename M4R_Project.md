@@ -133,6 +133,11 @@ By substitution for the Haar wavelets with the integral equation and using the a
 ### Numerical implementation
 
 $$
+S_{1}(j) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{j,1}(t_{k}), \quad 
+S_2 = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})
+$$
+
+$$
 \sum^{N}_{j=1}a_{j}\left(p_{j,1}(x_{i}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\right)\\
 = f(x_{i}) - \frac{1}{1-S_{2}}
 \left(1 - \frac{1}{N}\sum^{N}_{k=1}K(x_{i},t_{k})\right)
