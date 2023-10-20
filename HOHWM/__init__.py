@@ -1,0 +1,1 @@
+from IntegralEquation import IntegralEquation  # noqa
