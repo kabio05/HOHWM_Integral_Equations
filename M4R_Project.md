@@ -124,7 +124,7 @@ For the HOHWM, we consider the $sth$ derivative of the unknown function $u(x)$ a
 $$
 \frac{d^{s}u(x)}{dx^{s}} = \sum^{N}_{i=1} a_{i}h_{i}(x), \quad s = 1,2,\ldots,
 $$
-where $a_{i}$, $i = 1,2,\ldots,N$ are N unknown constants. The function $u(x)$ is obtains by integrating the summation $s$ times, which will lead to additional s constants. To calculate the Haar coefficients we consider the collocation points 
+where $a_{i}$, $i = 1,2,\ldots,N$ are N unknown constants, and N should be 2M as the property of Haar wavelets. The function $u(x)$ is obtains by integrating the summation $s$ times, which will lead to additional s constants. To calculate the Haar coefficients we consider the collocation points 
 $$
 x_{k} =  a + (b-a)\frac{k-0.5}{N}, \quad k = 1,2,\ldots,N.
 $$
