@@ -1,1 +1,1 @@
-from IntegralEquation import IntegralEquation  # noqa
+from IntegralEquation import *  # noqa

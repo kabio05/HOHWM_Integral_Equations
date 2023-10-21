@@ -1,4 +1,5 @@
 import numpy as np  # noqa
+import matplotlib.pyplot as plt # noqa
 
 
 def index(i):
@@ -9,6 +10,27 @@ def index(i):
     k = int(i - 2**j) - 1
     return j, k
 
+def haar_vec(x, i):
+    """
+    x: input vector
+    i: the index of the Haar wavelet function
+
+    return: the Haar wavelet function
+    """
+    if i == 1:
+        return np.ones(len(x))
+    if i >= 2:
+        j, k = index(i) # j is the scale, k is the translation
+        m = 2 ** j
+        alpha = k / m
+        beta = (k + 0.5) / m
+        gamma = (k + 1) / m
+        a = (x>=alpha) & (x<beta) 
+        b = (x>=beta) & (x<=gamma)
+        b = b.astype(int)
+        a = a.astype(int)
+        c = a - b
+        return c
 
 def haar_int_1(x, i):
     if i == 1:
@@ -43,7 +65,7 @@ class IntegralEquation:
     Initialize an instance of the IntegralEquation class.
     """
 
-    def __init__(self, linear, f, lamb, a, b, K, Phi):  # noqa
+    def __init__(self, linear, f, lamb, a, b, K, Phi): # noqa
         if linear:
             self.linear = True
         else:
@@ -55,14 +77,41 @@ class IntegralEquation:
         self.K = K
         self.Phi = Phi
 
-    def solve(self):
+    def solve(self, plot=False):
         if self.linear:
-            return self.solve_linear()
+            if plot:
+                return self.solve_linear(plot=True)
+            else:
+                return self.solve_linear()
         else:
-            raise NotImplementedError(
-                'Nonlinear integral equations are not implemented yet.')
+             raise NotImplementedError('Nonlinear integral equations are not implemented yet.')
 
-    def solve_linear(self):
+    def haar_int_1(x, i):
+        if i == 1:
+            return x
+        if i >= 2:
+            j, k = index(i) # j is the scale, k is the translation
+            m = 2 ** j
+            alpha = k / m
+            beta = (k + 0.5) / m
+            gamma = (k + 1) / m
+            a = (x>=alpha) & (x<beta) 
+            b = (x>=beta) & (x<=gamma)
+            b = b.astype(int)
+            a = a.astype(int)
+            c = a * (x - alpha) - b * (x - gamma)
+            return c
+
+    def haar_int_1_mat(x, N):
+        mat = np.zeros((N, len(x)))
+        for j in range(1, N + 1):
+            mat[:, j - 1] = haar_int_1(x, j)
+        return mat
+
+    def collocation(N=64):
+        return np.linspace(0, 1, N, endpoint=False) + 0.5 / N
+   
+    def solve_linear(self, N=64, plot=False):
         f = self.f
         lamb = self.lamb
         a = self.a
@@ -70,31 +119,41 @@ class IntegralEquation:
         K = self.K
         Phi = self.Phi
 
+        t = collocation(N)
+        x = collocation(N)
+
         S_1 = np.zeros(N)
         for j in range(N):
             for k in range(N):
-                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j + 1)
-        S_1 = 1 / N * S_1
+                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j+1)
+        S_1 = 1/N * S_1
 
         S_2 = 0
         for k in range(N):
             S_2 += K(0, t[k])
-        S_2 = 1 / N * S_2
+        S_2 = 1/N * S_2
 
         M_A = np.zeros((N, N))
         for j in range(N):
             for k in range(N):
-                M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j + 1)
-        M_A = haar_int_1_mat(x, N) - 1 / N * M_A
+                M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j+1)
+        M_A = haar_int_1_mat(x, N) - 1/N * M_A
 
         V_B = np.zeros(N)
         for k in range(N):
             V_B += K(x, t[k])
-        V_B = 1 - 1 / N * V_B
+        V_B = 1 - 1/N * V_B
 
         A_ls = M_A + np.outer(V_B, S_1) / (1 - S_2)
         B_ls = f(x) - f(0) * V_B / (1 - S_2)
 
         coef_haar = np.linalg.solve(A_ls, B_ls)
 
-        return coef_haar
+        if plot is False:
+            return coef_haar
+        else:
+            # form the result of the approximation
+            u_haar_approx = np.zeros(N)
+            for k in range(N):
+                u_haar_approx += coef_haar[k] * haar_vec(x, k + 1)
+            plt.plot(x, u_haar_approx, label='Approximation')
