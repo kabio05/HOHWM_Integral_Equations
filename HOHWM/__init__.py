@@ -1,1 +1,1 @@
-from IntegralEquation import *  # noqa
+from .IntegralEquation import * # noqa

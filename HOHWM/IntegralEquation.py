@@ -74,16 +74,18 @@ class IntegralEquation:
         self.f = f
         self.K = K
 
-    def solve(self, plot=False):
+    def solve(self, plot=False, approx=False):
         if self.linear:
             if plot:
                 return self.solve_linear(plot=True)
+            elif approx:
+                return self.solve_linear(approx=True)
             else:
                 return self.solve_linear()
         else:
             raise NotImplementedError('Nonlinear integral equations are not implemented yet.')
 
-    def solve_linear(self, N=64, plot=False):
+    def solve_linear(self, N=64, plot=False, approx=False):
         f = self.f
         K = self.K
 
@@ -118,15 +120,19 @@ class IntegralEquation:
 
             coef_haar = np.linalg.solve(A_ls, B_ls)
 
+            # calculate the approximation
+            u_haar_approx = np.zeros(N)
+            for k in range(N):
+                u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
+            C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
+            u_haar_approx += C_1
+
             if plot is True:
-                # form the result of the approximation
-                u_haar_approx = np.zeros(N)
-                for k in range(N):
-                    u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
-                C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
-                u_haar_approx += C_1
                 plt.plot(x, u_haar_approx, label='Approximation')
-            return coef_haar
+            elif approx is True:
+                return u_haar_approx
+            else:
+                return coef_haar
 
         elif self.type == 'Volterra':
             M_A = np.zeros((N, N))
@@ -144,28 +150,33 @@ class IntegralEquation:
 
             coef_haar = np.linalg.solve(M_A, V_B)
 
+            u_haar_approx = np.zeros(N)
+            for k in range(N):
+                u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
+            C_1 = f(0)
+            u_haar_approx += C_1
+
             if plot is True:
-                # form the result of the approximation
-                u_haar_approx = np.zeros(N)
-                for k in range(N):
-                    u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
-                C_1 = f(0)
-                u_haar_approx += C_1
                 plt.plot(x, u_haar_approx, label='Approximation')
-            return coef_haar
+            elif approx is True:
+                return u_haar_approx
+            else:
+                return coef_haar
 
         else:
             raise NotImplementedError
 
 
-f = lambda x: np.exp(x) + np.exp(-x)
-K = lambda x, t: -np.exp(-(x + t))
-test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-test.solve(plot=True)
-plt.show()
+# f = lambda x: np.exp(x) + np.exp(-x)
+# K = lambda x, t: -np.exp(-(x + t))
+# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+# test.solve(plot=True)
+# plt.show()
 
-f = lambda x: 1/2 * x**2 * np.exp(-x)
-K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
-test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
-test.solve(plot=True)
-plt.show()
+# f = lambda x: 1/2 * x**2 * np.exp(-x)
+# K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
+# test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
+# test.solve(approx=True)
+# print(test.solve(approx=True))
+# plt.plot(collocation(), test.solve(approx=True), label='Approximation')
+# plt.show()
