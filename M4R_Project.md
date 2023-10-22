@@ -132,6 +132,8 @@ By substitution for the Haar wavelets with the integral equation and using the a
 
 ### Numerical implementation
 
+#### First order HOHWM on Linear Fredholm Integral Equation
+
 $$
 S_{1}(j) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{j,1}(t_{k}), \quad 
 S_2 = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})
@@ -202,6 +204,20 @@ F :=  \left[
 \right] \\
 C = D + E + F
 $$
+
+#### First order HOHWM on Linear Volterra Integral Equation
+
+$$
+u(x) = f(x) + \int^{x}_{0}K(x,t)u(t)dt
+$$
+
+$$
+\sum^{N}_{j=1}a_{j}\left(p_{j,1}(x_{i}) - \frac{1}{N}\sum^{i}_{k=1}K(x_{i},t_{k})p_{j,1}(t_{k})\right)\\
+= f(x_{i}) - f(0) + f(0)
+\left(\frac{1}{N}\sum^{i}_{k=1}K(x_{i},t_{k})\right)
+, \quad i = 1,2,...N.
+$$
+
 
 
 ## Reference
