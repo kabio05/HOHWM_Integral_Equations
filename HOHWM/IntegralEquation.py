@@ -56,7 +56,7 @@ def haar_int_1_mat(x, N):
     return mat
 
 
-def collocation(N=64):
+def collocation(N):
     return np.linspace(0, 1, N, endpoint=False) + 0.5 / N
 
 
@@ -66,26 +66,28 @@ class IntegralEquation:
     """
 
     def __init__(self, linear, type, f, K, **kwargs):
-        if linear:
-            self.linear = True
-        else:
-            self.linear = False
+        self.linear = linear
         self.type = type
         self.f = f
         self.K = K
 
-    def solve(self, plot=False, approx=False):
+    def solve(self, N=64, plot=False, approx=False):
+        # Make sure N is a power of 2
+        N = N
+        if N & (N - 1) != 0:
+            raise ValueError('N must be a power of 2.')
+        
         if self.linear:
             if plot:
-                return self.solve_linear(plot=True)
+                return self.solve_linear(N=N, plot=True)
             elif approx:
-                return self.solve_linear(approx=True)
+                return self.solve_linear(N=N, approx=True)
             else:
-                return self.solve_linear()
+                return self.solve_linear(N=N)
         else:
             raise NotImplementedError('Nonlinear integral equations are not implemented yet.')
 
-    def solve_linear(self, N=64, plot=False, approx=False):
+    def solve_linear(self, N, plot=False, approx=False):
         f = self.f
         K = self.K
 
