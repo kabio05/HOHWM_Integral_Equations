@@ -71,7 +71,7 @@ class IntegralEquation:
         self.f = f
         self.K = K
 
-    def solve(self, N=64, plot=False, approx=False):
+    def solve(self, N=64, plot=False, approx=False, approx_func=False):
         # Make sure N is a power of 2
         N = N
         if N & (N - 1) != 0:
@@ -82,12 +82,15 @@ class IntegralEquation:
                 return self.solve_linear(N=N, plot=True)
             elif approx:
                 return self.solve_linear(N=N, approx=True)
+            elif approx_func:
+                return self.solve_linear(N=N, approx_func=True)
             else:
                 return self.solve_linear(N=N)
         else:
-            raise NotImplementedError('Nonlinear integral equations are not implemented yet.')
+            raise NotImplementedError(
+                'Nonlinear integral equations are not implemented yet.')
 
-    def solve_linear(self, N, plot=False, approx=False):
+    def solve_linear(self, N, plot=False, approx=False, approx_func=False):
         f = self.f
         K = self.K
 
@@ -133,6 +136,10 @@ class IntegralEquation:
                 plt.plot(x, u_haar_approx, label='Approximation')
             elif approx is True:
                 return u_haar_approx
+            elif approx_func is True:
+                def u_haar_approx_func(x):
+                    return np.interp(x, collocation(N), u_haar_approx)
+                return u_haar_approx_func
             else:
                 return coef_haar
 
@@ -162,6 +169,10 @@ class IntegralEquation:
                 plt.plot(x, u_haar_approx, label='Approximation')
             elif approx is True:
                 return u_haar_approx
+            elif approx_func is True:
+                def u_haar_approx_func(x):
+                    return np.interp(x, collocation(N), u_haar_approx)
+                return u_haar_approx_func
             else:
                 return coef_haar
 
