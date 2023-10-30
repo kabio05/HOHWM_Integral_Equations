@@ -64,7 +64,7 @@ for test_type in ["Fredholm", "Volterra"]:
     plt.plot(x, y2, label="slope -2", linestyle="dashed", color="grey")
 
     plt.legend()
-    plt.show()
+    plt.savefig("Linear_{}_1st_derivative.png".format(test_type), dpi=300)
 
 
 
