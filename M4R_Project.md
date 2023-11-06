@@ -218,7 +218,7 @@ $$
 , \quad i = 1,2,...N.
 $$
 
-Second order HOHWM on Linear Fredholm Integral Equation
+**Second order HOHWM on Linear Fredholm Integral Equation**
 $$
 S_{3} = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k}),\quad 
 S_{4} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(0,t_{k}), \quad
