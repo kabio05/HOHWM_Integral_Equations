@@ -56,6 +56,30 @@ def haar_int_1_mat(x, N):
     return mat
 
 
+def haar_int_2(x, i):
+    """
+    x: input vector
+    i: the index of the Haar wavelet function
+
+    return: the second-order integration of the Haar wavelet function
+    """
+    if i == 1:
+        return 0.5 * x ** 2
+    if i >= 2:
+        int_1 = haar_int_1(x, i)
+        int_2 = np.zeros(len(x))
+        for j in range(len(x)):
+            int_2[j] = np.trapz(int_1[:j+1], x[:j+1])
+        return int_2
+
+
+def haar_int_2_mat(x, N):
+    mat = np.zeros((N, len(x)))
+    for j in range(1, N + 1):
+        mat[:, j - 1] = haar_int_2(x, j)
+    return mat
+
+
 def collocation(N):
     return np.linspace(0, 1, N, endpoint=False) + 0.5 / N
 

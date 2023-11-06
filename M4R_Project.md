@@ -218,7 +218,76 @@ $$
 , \quad i = 1,2,...N.
 $$
 
+Second order HOHWM on Linear Fredholm Integral Equation
+$$
+S_{3} = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k}),\quad 
+S_{4} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(0,t_{k}), \quad
+S_{5} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(1,t_{k}),\\
+S_{6}(i) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{i,2}(t_{k}), \quad
+S_{7}(i) = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k})p_{i,2}(t_{k})\\
+S_{8} = 1 - S_{2} + S_{4}(1-S_{3}) - S_{5}(1 - S_{2}).
+$$
 
+$$
+C_{1} = \frac{1}{S_{8}}
+\left(
+f(0)(1- S_{5}) + f(1)S_{4} + (1 - S_{5})\sum^{N}_{i = 1} a_{i}S_{6}(i) \right. \\ \left.
+- S_{4}\sum^{N}_{i = 1} a_{i}(p_{i,2}(1) - S_{7}(i))
+\right)
+$$
+
+$$
+C_{2} = \frac{1}{S_{8}}\left(
+-f(0)(1-S_{3}) + f(1)(1- S_{2}) - (1 - S_{3})\sum^{N}_{i = 1} a_{i}S_{6}(i) \right. \\ \left.
+-(1-S_{2})\sum^{N}_{i = 1} a_{i}(p_{i,2}(1) - S_{7}(i))
+\right)
+$$
+
+Introducing the following notations:
+$$
+A := f(0)(1- S_{5}) + f(1)S_{4}, \quad
+D:= -f(0)(1-S_{3}) + f(1)(1- S_{2})\\
+ B(i) := p_{i,2}(1) - S_{7}(i),
+\\
+E(i) := (1 - S_{5})S_{6}(i) - S_{4}B(i), \quad
+F(i) := (1- S_{3})S_{6}(i) + (1 - S_{2})B_{i}
+$$
+Then we have
+$$
+C_{1} = \frac{1}{S_{8}}(A + \sum^{N}_{i = 1}a_{i}E(i)) \\
+C_{2} = \frac{1}{S_{8}}(D - \sum^{N}_{i = 1}a_{i}F(i))
+$$
+
+$$
+\sum^{N}_{i = 1}a_{i}\left(
+p_{i,2}(x_{j}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{j},t_{k})p_{i,2}(t_{k})
+\right) = \\
+f(x_{j}) - C_{1}\left(
+1- \frac{1}{N}\sum^{N}_{k=1}K(x_{j},t_{k})
+\right)
+-C_{2}\left(
+x_{j} - \frac{1}{N}\sum^{N}_{k=1}t_{k}K(x_{j},t_{k})
+\right)
+$$
+
+Call
+$$
+\mathbb{A}(i,j) := p_{i,2}(x_{j}) - \frac{1}{N}\sum^{N}_{k=1}K(x_{j},t_{k})p_{i,2}(t_{k}) \\
+P(j) = 1- \frac{1}{N}\sum^{N}_{k=1}K(x_{j},t_{k}) , \quad
+Q(j) = x_{j} - \frac{1}{N}\sum^{N}_{k=1}t_{k}K(x_{j},t_{k})
+$$
+Then we have
+$$
+\sum^{N}_{i = 1}a_{i} \mathbb{A}(i,j) = f(x_{j}) - C_1P(j) - C_{2}Q(j)
+$$
+Substitute $C_{1}$ and $C_{2}$ into equation, we get
+$$
+\text{LHS} = \sum^{N}_{i = 1}a_{i}\left[
+\mathbb{A}(i,j) + \frac{1}{S_{8}}E(i)P(j) - \frac{1}{S_{8}} F(i)Q(j) 
+\right] \\
+\text{RHS} = f(x_{j}) - \frac{A}{S_{8}}P(j) - \frac{D}{S_{8}}Q(j)
+$$
+which exactly forms a linear system $Ax=b$.
 
 ## Reference
 
