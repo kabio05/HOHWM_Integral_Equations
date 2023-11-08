@@ -157,14 +157,21 @@ class IntegralEquation:
                 u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
             C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
             u_haar_approx += C_1
-
+            # breakpoint()
             if plot is True:
                 plt.plot(x, u_haar_approx, label='Approximation')
             elif approx is True:
                 return u_haar_approx
             elif approx_func is True:
                 def u_haar_approx_func(x):
-                    return np.interp(x, collocation(N), u_haar_approx)
+                    # superposition of the Haar wavelet functions
+                    approx_func_val = C_1
+                    for k in range(N):
+                        approx_func_val += coef_haar[k] * haar_int_1(x, k + 1)
+                    return approx_func_val
+
+                    # interpolation
+                    # return np.interp(x, collocation(N), u_haar_approx) 
                 return u_haar_approx_func
             else:
                 return coef_haar
@@ -197,7 +204,15 @@ class IntegralEquation:
                 return u_haar_approx
             elif approx_func is True:
                 def u_haar_approx_func(x):
-                    return np.interp(x, collocation(N), u_haar_approx)
+                    # superposition of the Haar wavelet functions
+                    # breakpoint()
+                    approx_func_val = C_1
+                    for k in range(N):
+                        approx_func_val += coef_haar[k] * haar_int_1(x, k + 1)
+                    return approx_func_val
+
+                    # interpolation
+                    # return np.interp(x, collocation(N), u_haar_approx) 
                 return u_haar_approx_func
             else:
                 return coef_haar

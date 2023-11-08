@@ -45,6 +45,7 @@ for test_type in ["Fredholm", "Volterra"]:
             np.abs(u_true_vec - u_haar_approx_vec)) # probably wrong
 
     # print the results
+    print("Linear {} (1st derivative)".format(test_type))
     print("Local error: ", err_local)
     print("Global error: ", err_global)
 
