@@ -13,7 +13,21 @@ def test_1st_Linear_Fredholm(N):
     u_true = lambda x: np.exp(x)
 
     test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-    u_haar_approx = test.solve(N=N, approx=True)
+    u_haar_approx = test.solve(N=N, s=1, approx=True)
+    x = HOHWM.collocation(N)
+    err = u_true(x) - u_haar_approx
+    assert (err < 1.0e-8).all()
+
+
+@pytest.mark.parametrize('N', [4, 8, 16, 32, 64, 128])
+def test_2nd_Linear_Fredholm(N):
+    N = N
+    f = lambda x: np.exp(x) + np.exp(-x)
+    K = lambda x, t: -np.exp(-(x + t))
+    u_true = lambda x: np.exp(x)
+
+    test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+    u_haar_approx = test.solve(N=N, s=2, approx=True)
     x = HOHWM.collocation(N)
     err = u_true(x) - u_haar_approx
     assert (err < 1.0e-8).all()
@@ -30,7 +44,7 @@ def test_1st_Linear_Volterra(N):
     x = HOHWM.collocation(N)
     t = HOHWM.collocation(N)
     test = HOHWM.IntegralEquation(linear=True, type="Volterra", f=f, K=K)
-    u_haar_approx = test.solve(N=N, approx=True)
+    u_haar_approx = test.solve(N=N, s=1, approx=True)
     x = HOHWM.collocation(N)
     err = u_true(x) - u_haar_approx
     assert (err < 1.0e-8).all()
