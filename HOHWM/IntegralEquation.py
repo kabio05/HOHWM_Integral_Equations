@@ -11,7 +11,7 @@ def index(i):
 
 
 def haar_vec(x, i):
-    """ # noqa
+    """
     x: input vector
     i: the index of the Haar wavelet function
 
@@ -20,32 +20,34 @@ def haar_vec(x, i):
     if i == 1:
         return np.ones(len(x))
     if i >= 2:
-        j, k = index(i)  # j is the scale, k is the translation
+        j, k = index(i) # j is the scale, k is the translation
         m = 2 ** j
         alpha = k / m
         beta = (k + 0.5) / m
         gamma = (k + 1) / m
-        a = (x >= alpha) & (x < beta)
-        b = (x >= beta) & (x <= gamma)
-        b = b.astype(int)
-        a = a.astype(int)
-        c = a - b
+        a = 1. * (x>=alpha) * (x<beta) 
+        b = -1 * (x>=beta) * (x<=gamma)
+        c = a + b
         return c
 
 def haar_int_1(x, i):
+    """
+    x: input vector
+    i: the index of the Haar wavelet function
+
+    return: the integration of the Haar wavelet function
+    """
     if i == 1:
         return x
     if i >= 2:
-        j, k = index(i)  # j is the scale, k is the translation
-        m = 2**j
+        j, k = index(i) # j is the scale, k is the translation
+        m = 2 ** j
         alpha = k / m
         beta = (k + 0.5) / m
         gamma = (k + 1) / m
-        a = (x >= alpha) & (x < beta)
-        b = (x >= beta) & (x <= gamma)
-        b = b.astype(int)
-        a = a.astype(int)
-        c = a * (x - alpha) - b * (x - gamma)
+        a = 1. * (x>=alpha) * (x<beta)
+        b = -1. * (x>=beta) * (x<=gamma)
+        c = a * (x - alpha) + b * (x - gamma)
         return c
 
 
