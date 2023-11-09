@@ -257,7 +257,14 @@ class IntegralEquation:
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
-                        raise NotImplementedError
+                        breakpoint()
+                        def u_haar_approx_func(x):
+                        # superposition of the Haar wavelet functions
+                            approx_func_val = C1 + C2 * x
+                            for k in range(N):
+                                approx_func_val += coef_haar[k] * haar_int_2(x, k + 1)
+                            return approx_func_val
+                        return u_haar_approx_func
                     else:
                         return coef_haar
 
