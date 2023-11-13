@@ -205,7 +205,7 @@ F :=  \left[
 C = D + E + F
 $$
 
-#### First order HOHWM on Linear Volterra Integral Equation
+### First order HOHWM on Linear Volterra Integral Equation
 
 $$
 u(x) = f(x) + \int^{x}_{0}K(x,t)u(t)dt
@@ -220,12 +220,16 @@ $$
 
 **Second order HOHWM on Linear Fredholm Integral Equation**
 $$
+\begin{aligned}
+S_{1}(i) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{i,1}(t_{k}), \quad 
+S_{2} = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k}), \quad\\
 S_{3} = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k}),\quad 
 S_{4} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(0,t_{k}), \quad
-S_{5} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(1,t_{k}),\\
+S_{5} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(1,t_{k}), \quad\\
 S_{6}(i) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{i,2}(t_{k}), \quad
 S_{7}(i) = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k})p_{i,2}(t_{k})\\
 S_{8} = 1 - S_{2} + S_{4}(1-S_{3}) - S_{5}(1 - S_{2}).
+\end{aligned}
 $$
 
 $$
@@ -288,6 +292,67 @@ $$
 \text{RHS} = f(x_{j}) - \frac{A}{S_{8}}P(j) - \frac{D}{S_{8}}Q(j)
 $$
 which exactly forms a linear system $Ax=b$.
+
+**Second order HOHWM on Linear Volterra Integral Equation**
+$$
+\begin{aligned}
+S_{1}(i) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{i,1}(t_{k}), \quad 
+S_{2} = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k}), \quad\\
+S_{3} = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k}),\quad 
+S_{4} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(0,t_{k}), \quad
+S_{5} = \frac{1}{N}\sum^{N}_{k=1} t_{k} K(1,t_{k}), \quad\\
+S_{6}(i) = \frac{1}{N}\sum^{N}_{k=1}K(0,t_{k})p_{i,2}(t_{k}), \quad
+S_{7}(i) = \frac{1}{N}\sum^{N}_{k=1}K(1,t_{k})p_{i,2}(t_{k})\\
+S_{8} = 1 - S_{2} + S_{4}(1-S_{3}) - S_{5}(1 - S_{2}).
+\end{aligned}
+$$
+
+$$
+C_{1} = f(0)
+$$
+
+$$
+C_{2} = \frac{1}{1 - S_{5}}\left(
+-f(0)(1 - S_{3}) + f(1) - \sum^{N}_{i=1}a_{i}(p_{i,2}(1)-S_{7}(i))
+\right)
+$$
+
+Plugging into
+$$
+\sum^{N}_{i = 1}a_{i}\left(
+p_{i,2}(x_{j}) - \frac{1}{N}\sum^{j}_{k=1}K(x_{j},t_{k})p_{i,2}(t_{k})
+\right) = \\
+f(x_{j}) - C_{1}\left(
+1- \frac{1}{N}\sum^{j}_{k=1}K(x_{j},t_{k})
+\right)
+-C_{2}\left(
+x_{j} - \frac{1}{N}\sum^{j}_{k=1}t_{k}K(x_{j},t_{k})
+\right)
+$$
+Call
+$$
+\mathbb{A}(i,j) := p_{i,2}(x_{j}) - \frac{1}{N}\sum^{j}_{k=1}K(x_{j},t_{k})p_{i,2}(t_{k}) \\
+P(j) = 1- \frac{1}{N}\sum^{j}_{k=1}K(x_{j},t_{k}) , \quad
+Q(j) = x_{j} - \frac{1}{N}\sum^{j}_{k=1}t_{k}K(x_{j},t_{k})
+$$
+
+$$
+A = -f(0)(1 - S_{3}) + f(1)\\
+B(i) = p_{i,2}(1)-S_{7}(i)
+$$
+
+Then we have
+$$
+\sum^{N}_{i=1}a_{i}\mathbb{A}(i,j) = f(x_{j}) - f(0)P(j) - \frac{Q(j)}{1-S_{5}}\left(A - \sum_{i=1}^{N}a_{i}B(i)\right)
+$$
+Then
+$$
+\text{LHS} = \sum^{N}_{i=1}a_{i}\left(
+\mathbb{A}(i,j) - \frac{B(i)Q(j)}{1-S_{5}}
+\right)\\
+\text{RHS} = f(x_{j}) - f(0)P(j) - \frac{A Q(j)}{1-S_{5}}
+$$
+ which exactly forms a linear system $Ax=b$.
 
 ## Reference
 

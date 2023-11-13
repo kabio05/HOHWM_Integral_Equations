@@ -25,7 +25,7 @@ for test_type in ["Fredholm", "Volterra"]:
 
 
     for M in col_size:
-        u_approx_func = test.solve(N = 2*M, s=2, approx_func=True)
+        u_approx_func = test.solve(N = 2*M, s=1, approx_func=True)
 
         x = np.linspace(0, 1, 100)
 
@@ -60,7 +60,7 @@ for test_type in ["Fredholm", "Volterra"]:
     # plot two line with slope -1 and -2
     x = np.linspace(0, np.log(col_size)[-1], 100)
     y1 = -2 * x + np.log(err_local[0])
-    y2 = -x + np.log(err_global[0])
+    # y2 = -2 * x + np.log(err_global[0])
     # plt.plot(x, y1, label="slope -1", linestyle="dashed", color="grey")
     plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
 
