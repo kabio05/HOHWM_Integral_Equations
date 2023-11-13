@@ -2,6 +2,7 @@ import pytest
 import HOHWM
 from numpy import random
 import numpy as np
+import matplotlib.pyplot as plt
 # flake8: noqa
 
 
@@ -16,7 +17,7 @@ def test_1st_Linear_Fredholm(N):
     u_haar_approx = test.solve(N=N, s=1, approx=True)
     x = HOHWM.collocation(N)
     err = u_true(x) - u_haar_approx
-    assert (err < 1.0e-8).all()
+    assert (np.linalg.norm(err) < 1.0e-8)
 
 
 @pytest.mark.parametrize('N', [4, 8, 16, 32, 64, 128])
@@ -30,7 +31,7 @@ def test_2nd_Linear_Fredholm(N):
     u_haar_approx = test.solve(N=N, s=2, approx=True)
     x = HOHWM.collocation(N)
     err = u_true(x) - u_haar_approx
-    assert (err < 1.0e-8).all()
+    assert (np.linalg.norm(err) < 1.0e-8)
 
 
 @pytest.mark.parametrize('N', [4, 8, 16, 32, 64, 128])
@@ -47,7 +48,7 @@ def test_1st_Linear_Volterra(N):
     u_haar_approx = test.solve(N=N, s=1, approx=True)
     x = HOHWM.collocation(N)
     err = u_true(x) - u_haar_approx
-    assert (err < 1.0e-8).all()
+    assert (np.linalg.norm(err) < 1.0e-8)
 
 
 @pytest.mark.parametrize('N', [4, 8, 16, 32, 64, 128])
@@ -63,5 +64,6 @@ def test_2st_Linear_Volterra(N):
     test = HOHWM.IntegralEquation(linear=True, type="Volterra", f=f, K=K)
     u_haar_approx = test.solve(N=N, s=2, approx=True)
     x = HOHWM.collocation(N)
+    plt.plot(x, u_true(x), x, u_haar_approx)
     err = u_true(x) - u_haar_approx
-    assert (err < 1.0e-8).all()
+    assert (np.linalg.norm(err) < 1.0e-8)

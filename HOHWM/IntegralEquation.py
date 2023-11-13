@@ -316,46 +316,21 @@ class IntegralEquation:
                         return coef_haar
                 
                 elif s == 2:
-                    S_1 = np.zeros(N)
-                    for j in range(N):
-                        for k in range(N):
-                            S_1[j] += K(0, t[k]) * haar_int_1(t[k], j+1)
-                    S_1 = 1/N * S_1
-
-                    S_2 = 0
-                    for k in range(N):
-                        S_2 += K(0, t[k])
-                    S_2 = 1/N * S_2
-
-
                     S_3 = 0
                     for k in range(N):
                         S_3 += K(1, t[k])
                     S_3 = 1/N * S_3
 
-                    S_4 = 0
-                    for k in range(N):
-                        S_4 += K(0, t[k]) * t[k]
-                    S_4 = 1/N * S_4
-
                     S_5 = 0
                     for k in range(N):
                         S_5 += K(1, t[k]) * t[k]
                     S_5 = 1/N * S_5
-
-                    S_6 = np.zeros(N)
-                    for j in range(N):
-                        for k in range(N):
-                            S_6[j] += K(0, t[k]) * haar_int_2(t[k], j+1)
-                    S_6 = 1/N * S_6
-
+                    
                     S_7 = np.zeros(N)
                     for j in range(N):
                         for k in range(N):
                             S_7[j] += K(1, t[k]) * haar_int_2(t[k], j+1)
                     S_7 = 1/N * S_7
-
-                    S_8 = 1 - S_2 + S_4 * (1 - S_3) - S_5 * (1 - S_2)
 
                     A = -f(0) * (1 - S_3) + f(1)
                     
@@ -367,8 +342,8 @@ class IntegralEquation:
                     M_A = np.zeros((N, N))
                     for i in range(N):
                         for j in range(N):
-                            M_A[i, j] = np.sum(K(x[i], t[:i]) * haar_int_1(t[:i], j+1))
-                    M_A = haar_int_1_mat(x, N) - 1/N * M_A
+                            M_A[i, j] = np.sum(K(x[i], t[:i]) * haar_int_2(t[:i], j+1))
+                    M_A = haar_int_2_mat(x, N) - 1/N * M_A
 
                     V_P = np.zeros(N)
                     for i in range(N):
@@ -380,11 +355,11 @@ class IntegralEquation:
                         V_Q[i] = np.sum(K(x[i], t[:i]) * t[:i])
                     V_Q = x - 1/N * V_Q
 
-                    LHS_ls = M_A - np.outer(V_P, V_B) / (1 - S_5)
-                    RHS_ls = f(x) - f(0) * V_P - A / (1 - S_5) - A * V_Q / (1 - S_5)
+                    LHS_ls = M_A - np.outer(V_Q, V_B) / (1 - S_5)
+                    RHS_ls = f(x) - f(0) * V_P - A * V_Q / (1 - S_5)
                     
-                    coef_haar = np.linalg.solve(M_A, V_B)
-                    
+                    coef_haar = np.linalg.solve(LHS_ls, RHS_ls)
+                    # breakpoint()
                     u_haar_approx = np.zeros(N)
                     for k in range(N):
                         u_haar_approx += coef_haar[k] * haar_int_2(x, k + 1)
@@ -416,16 +391,27 @@ class IntegralEquation:
                 'Nonlinear integral equations are not implemented yet.'
                 )
 
+# N = 64
 # f = lambda x: np.exp(x) + np.exp(-x)
 # K = lambda x, t: -np.exp(-(x + t))
 # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-# test.solve(plot=True)
+# test.solve(N=N, s=2, plot=True)
 # plt.show()
 
+
+# N = 64
 # f = lambda x: 1/2 * x**2 * np.exp(-x)
 # K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
+# u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
+#     np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
+
+# x = collocation(N)
+# t = collocation(N)
 # test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
-# test.solve(approx=True)
-# print(test.solve(approx=True))
-# plt.plot(collocation(), test.solve(approx=True), label='Approximation')
+# u_haar_approx = test.solve(N=N, s=2, approx=True)
+# x = collocation(N)
+# plt.plot(x, u_true(x), x, u_haar_approx)
+# plt.legend(["True", "Approx"])
 # plt.show()
+# err = u_true(x) - u_haar_approx
+# print(np.linalg.norm(err))
