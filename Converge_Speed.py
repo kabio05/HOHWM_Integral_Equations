@@ -23,49 +23,46 @@ for test_type in ["Fredholm", "Volterra"]:
         np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
         test = HOHWM.IntegralEquation(linear=True, type="Volterra", f=f, K=K)
 
+    for s in [1, 2]:
+        for M in col_size:
+            u_approx_func = test.solve(N = 2*M, s=s, approx_func=True)
 
-    for M in col_size:
-        u_approx_func = test.solve(N = 2*M, s=1, approx_func=True)
+            x = np.linspace(0, 1, 100)
 
-        x = np.linspace(0, 1, 100)
+            # compute the local error at x = 0.5
+            u_true_half = u_true(0.5)
+            u_haar_approx_half = u_approx_func(0.5)
+            # store the error
+            err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
 
-        # plt.plot(x, u_true(x), x, u_approx_func(x))
-        # plt.show()
-        
-        # compute the local error at x = 0.5
-        u_true_half = u_true(0.5)
-        u_haar_approx_half = u_approx_func(0.5)
-        # store the error
-        err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
+            # compute the global error with zero-norm
+            u_true_vec = u_true(x)
+            u_haar_approx_vec = u_approx_func(x)
+            err_global[col_size.index(M)] = np.linalg.norm(
+                np.abs(u_true_vec - u_haar_approx_vec)) # probably wrong
 
-        # compute the global error with zero-norm
-        u_true_vec = u_true(x)
-        u_haar_approx_vec = u_approx_func(x)
-        err_global[col_size.index(M)] = np.linalg.norm(
-            np.abs(u_true_vec - u_haar_approx_vec)) # probably wrong
+        # print the results
+        print("Linear {} ({}st derivative)".format(test_type, s))
+        print("Local error: ", err_local)
+        print("Global error: ", err_global)
+        print("\n")
+        # plot the errors in log-log scale
+        plt.figure()
+        plt.title("Linear {} ({}st derivative)".format(test_type, s))
+        plt.xlabel("log(N)")
+        plt.ylabel("log(error)")
+        plt.plot(np.log(col_size), np.log(err_local), label="Local error", color="red")
+        plt.plot(np.log(col_size), np.log(err_global), label="Global error", color="blue")
 
-    # print the results
-    print("Linear {} (1st derivative)".format(test_type))
-    print("Local error: ", err_local)
-    print("Global error: ", err_global)
+        # plot two line with slope -1 and -2
+        x = np.linspace(0, np.log(col_size)[-1], 100)
+        y1 = -2 * x + np.log(err_local[0])
+        y2 = -2 * x + np.log(err_global[0])
+        plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
+        plt.plot(x, y2, label="slope -2", linestyle="dashed", color="grey")
 
-    # plot the errors in log-log scale
-    plt.figure()
-    plt.title("Linear {} (1st derivative)".format(test_type))
-    plt.xlabel("log(N)")
-    plt.ylabel("log(error)")
-    plt.plot(np.log(col_size), np.log(err_local), label="Local error", color="red")
-    plt.plot(np.log(col_size), np.log(err_global), label="Global error", color="blue")
-
-    # plot two line with slope -1 and -2
-    x = np.linspace(0, np.log(col_size)[-1], 100)
-    y1 = -2 * x + np.log(err_local[0])
-    # y2 = -2 * x + np.log(err_global[0])
-    # plt.plot(x, y1, label="slope -1", linestyle="dashed", color="grey")
-    plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
-
-    plt.legend()
-    plt.savefig("Linear_{}_1st_derivative.png".format(test_type), dpi=300)
+        plt.legend()
+        plt.savefig("Linear_{}_{}st_derivative.png".format(test_type, s), dpi=300)
 
 
 

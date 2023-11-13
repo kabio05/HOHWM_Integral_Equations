@@ -258,9 +258,8 @@ class IntegralEquation:
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
-                        breakpoint()
                         def u_haar_approx_func(x):
-                        # superposition of the Haar wavelet functions
+                            # superposition of the Haar wavelet functions
                             approx_func_val = C1 + C2 * x
                             for k in range(N):
                                 approx_func_val += coef_haar[k] * haar_int_2(x, k + 1)
@@ -372,7 +371,13 @@ class IntegralEquation:
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
-                        raise NotImplementedError
+                        def u_haar_approx_func(x):
+                            # superposition of the Haar wavelet functions
+                            approx_func_val = C1 + C2 * x
+                            for k in range(N):
+                                approx_func_val += coef_haar[k] * haar_int_2(x, k + 1)
+                            return approx_func_val
+                        return u_haar_approx_func
                     else:
                         return coef_haar
 
@@ -399,19 +404,28 @@ class IntegralEquation:
 # plt.show()
 
 
-# N = 64
-# f = lambda x: 1/2 * x**2 * np.exp(-x)
-# K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
-# u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
-#     np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
+N = 64
+f = lambda x: 1/2 * x**2 * np.exp(-x)
+K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
+u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
+    np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
 
-# x = collocation(N)
-# t = collocation(N)
-# test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
+x = collocation(N)
+t = collocation(N)
+test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
 # u_haar_approx = test.solve(N=N, s=2, approx=True)
 # x = collocation(N)
-# plt.plot(x, u_true(x), x, u_haar_approx)
-# plt.legend(["True", "Approx"])
+# plt.plot(x, u_haar_approx)
+# plt.legend(["Approx"])
 # plt.show()
 # err = u_true(x) - u_haar_approx
 # print(np.linalg.norm(err))
+u_approx_func = test.solve(N = N, s=2, approx_func=True)
+x = np.linspace(0, 1, 100)
+plt.plot(x, u_approx_func(x))
+# point x = 0.5 for both functions
+plt.plot(0.5, u_approx_func(0.5), 'o', color='black')
+plt.show()
+u_true_half = u_true(0.5)
+u_haar_approx_half = u_approx_func(0.5)
+print(abs(u_true_half - u_haar_approx_half))
