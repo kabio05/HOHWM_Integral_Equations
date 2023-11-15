@@ -413,18 +413,17 @@ u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
 x = collocation(N)
 t = collocation(N)
 test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
-# u_haar_approx = test.solve(N=N, s=2, approx=True)
-# x = collocation(N)
-# plt.plot(x, u_haar_approx)
-# plt.legend(["Approx"])
-# plt.show()
-# err = u_true(x) - u_haar_approx
-# print(np.linalg.norm(err))
+u_haar_approx = test.solve(N=N, s=2, approx=True)
+x = collocation(N)
+plt.plot(x, u_haar_approx)
+plt.legend(["Approx"])
+plt.show()
+err = u_true(x) - u_haar_approx
+print(np.linalg.norm(err))
 
 u_approx_func = test.solve(N = N, s=2, approx_func=True)
 x = np.linspace(0, 1, 101)
 plt.plot(x, u_approx_func(x))
-# point x = 0.5 for both functions
 plt.plot(0.5, u_approx_func(0.5), 'o', color='black')
 plt.show()
 u_true_half = u_true(0.5)
