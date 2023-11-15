@@ -45,6 +45,9 @@ for test_type in ["Fredholm", "Volterra"]:
         print("Linear {} ({}st derivative)".format(test_type, s))
         print("Local error: ", err_local)
         print("Global error: ", err_global)
+        print("")
+        print("Local experimental rate of convergence: ", np.diff(np.log(err_local))/np.log(2))
+        print("Global experimental rate of convergence : ", np.diff(np.log(err_global))/np.log(2))
         print("\n")
         # plot the errors in log-log scale
         plt.figure()
@@ -57,9 +60,9 @@ for test_type in ["Fredholm", "Volterra"]:
         # plot two line with slope -1 and -2
         x = np.linspace(0, np.log(col_size)[-1], 100)
         y1 = -2 * x + np.log(err_local[0])
-        y2 = -4 * x + np.log(err_global[0])
+        y2 = -3 * x + np.log(err_global[0])
         plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
-        plt.plot(x, y2, label="slope -4", linestyle="dashed", color="grey")
+        plt.plot(x, y2, label="slope -3", linestyle="dashed", color="black")
 
         plt.legend()
         plt.savefig("Linear_{}_{}st_derivative.png".format(test_type, s), dpi=300)
