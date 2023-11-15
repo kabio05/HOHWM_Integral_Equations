@@ -30,8 +30,8 @@ for test_type in ["Fredholm", "Volterra"]:
             x = np.linspace(0, 1, 100)
 
             # compute the local error at x = 0.5
-            u_true_half = u_true(0.5)
-            u_haar_approx_half = u_approx_func(0.5)
+            u_true_half = u_true(x[50])
+            u_haar_approx_half = u_approx_func(x[50])
             # store the error
             err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
 
@@ -57,9 +57,9 @@ for test_type in ["Fredholm", "Volterra"]:
         # plot two line with slope -1 and -2
         x = np.linspace(0, np.log(col_size)[-1], 100)
         y1 = -2 * x + np.log(err_local[0])
-        y2 = -2 * x + np.log(err_global[0])
+        y2 = -4 * x + np.log(err_global[0])
         plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
-        plt.plot(x, y2, label="slope -2", linestyle="dashed", color="grey")
+        plt.plot(x, y2, label="slope -4", linestyle="dashed", color="grey")
 
         plt.legend()
         plt.savefig("Linear_{}_{}st_derivative.png".format(test_type, s), dpi=300)
