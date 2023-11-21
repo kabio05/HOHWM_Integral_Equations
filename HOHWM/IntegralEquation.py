@@ -226,11 +226,11 @@ class IntegralEquation:
                     V_F = (1 - S_3) * S_6 + (1 - S_2) * V_B
                     
                     M_A = np.zeros((N, N))
-                    for j in range(N):
+                    for i in range(N):
                         for k in range(N):
-                            M_A[:, j] += K(x, t[k]) * haar_int_2(t[k], j+1)
+                            M_A[:, i] += K(x, t[k]) * haar_int_2(t[k], i + 1)
                     M_A = haar_int_2_mat(x, N) - 1/N * M_A
-
+                    
                     V_P = np.zeros(N)
                     for k in range(N):
                         V_P += K(x, t[k])
@@ -257,6 +257,26 @@ class IntegralEquation:
                     print("C1 = ", C1)
                     print("C2 = ", C2)
                     print("coef_haar = ", coef_haar)
+                    print("x = ", x)
+                    print("t = ", t)                    
+                    print("S2 = ", S_2)
+                    print("S3 = ", S_3)
+                    print("S4 = ", S_4)
+                    print("S5 = ", S_5)
+                    print("S6 = ", S_6)
+                    print("S7 = ", S_7)
+                    print("S8 = ", S_8)
+                    print("A = ", A)
+                    print("D = ", D)
+                    print("V_B = ", V_B)
+                    print("V_E = ", V_E)
+                    print("V_F = ", V_F)
+                    print("M_A = ", M_A)
+                    print("V_P = ", V_P)
+                    print("V_Q = ", V_Q)
+                    print("LHS_ls = ", LHS_ls)
+                    print("RHS_ls = ", RHS_ls)
+
                     
                     if plot is True:
                         plt.plot(x, u_haar_approx, label='Approximation')
@@ -372,9 +392,9 @@ class IntegralEquation:
                     u_haar_approx += C1 + C2 * x
                     
                     # print the coefficients and constants
-                    print("C1 = ", C1)
-                    print("C2 = ", C2)
-                    print("coef_haar = ", coef_haar)
+                    # print("C1 = ", C1)
+                    # print("C2 = ", C2)
+                    # print("coef_haar = ", coef_haar)
                     
                     if plot is True:
                         plt.plot(x, u_haar_approx, label='Approximation')
@@ -503,11 +523,7 @@ f = lambda x: np.exp(x) + np.exp(-x)
 K = lambda x, t: -np.exp(-(x + t))
 u_true = lambda x: np.exp(x)
 test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-test.solve(N = N, s=2)
-
-# f = lambda x: 1/2 * x**2 * np.exp(-x)
-# K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
-# u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
-#     np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
-# test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
-# test.solve(N = N, s=2)
+test.solve(N = N, s=2, plot=True)
+# u_apporx = test.solve(N = N, s=2, approx=True)
+# err = u_true(collocation(N)) - u_apporx
+# print(err)
