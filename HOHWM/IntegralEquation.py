@@ -75,7 +75,7 @@ def haar_int_2(x, i):
         gamma = (k + 1) / m
         a = 1. * (x>=alpha) * (x<beta) * (x - alpha) ** 2 / 2
         b = -1. * (x>=beta) * (x<=gamma) * ((x - gamma) ** 2 / 2 - (beta - alpha) ** 2)
-        c = 1. * (x>= gamma) * (x <= 1) * (beta - alpha) ** 2
+        c = 1. * (x> gamma) * (x <= 1) * (beta - alpha) ** 2
         if i != 0 and (i & (i - 1)) == 0: # if i is power of 2
             c = 0
         int_2 = a + b + c
@@ -254,28 +254,28 @@ class IntegralEquation:
                     u_haar_approx += C1 + C2 * x
                     
                     # print the coefficients and constants
-                    print("C1 = ", C1)
-                    print("C2 = ", C2)
-                    print("coef_haar = ", coef_haar)
-                    print("x = ", x)
-                    print("t = ", t)                    
-                    print("S2 = ", S_2)
-                    print("S3 = ", S_3)
-                    print("S4 = ", S_4)
-                    print("S5 = ", S_5)
-                    print("S6 = ", S_6)
-                    print("S7 = ", S_7)
-                    print("S8 = ", S_8)
-                    print("A = ", A)
-                    print("D = ", D)
-                    print("V_B = ", V_B)
-                    print("V_E = ", V_E)
-                    print("V_F = ", V_F)
-                    print("M_A = ", M_A)
-                    print("V_P = ", V_P)
-                    print("V_Q = ", V_Q)
-                    print("LHS_ls = ", LHS_ls)
-                    print("RHS_ls = ", RHS_ls)
+                    # print("C1 = ", C1)
+                    # print("C2 = ", C2)
+                    # print("coef_haar = ", coef_haar)
+                    # print("x = ", x)
+                    # print("t = ", t)                    
+                    # print("S2 = ", S_2)
+                    # print("S3 = ", S_3)
+                    # print("S4 = ", S_4)
+                    # print("S5 = ", S_5)
+                    # print("S6 = ", S_6)
+                    # print("S7 = ", S_7)
+                    # print("S8 = ", S_8)
+                    # print("A = ", A)
+                    # print("D = ", D)
+                    # print("V_B = ", V_B)
+                    # print("V_E = ", V_E)
+                    # print("V_F = ", V_F)
+                    # print("M_A = ", M_A)
+                    # print("V_P = ", V_P)
+                    # print("V_Q = ", V_Q)
+                    # print("LHS_ls = ", LHS_ls)
+                    # print("RHS_ls = ", RHS_ls)
 
                     
                     if plot is True:
@@ -428,27 +428,27 @@ class IntegralEquation:
 
 
 
-# # Fredholm
-# N = 64
-# f = lambda x: np.exp(x) + np.exp(-x)
-# K = lambda x, t: -np.exp(-(x + t))
-# u_true = lambda x: np.exp(x)
-# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+# Fredholm
+N = 64
+f = lambda x: np.exp(x) + np.exp(-x)
+K = lambda x, t: -np.exp(-(x + t))
+u_true = lambda x: np.exp(x)
+test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
 
-# u_approx_func = test.solve(N = N, s=2, approx_func=True)
-# x = np.linspace(0, 1, 101)
-# plt.figure()
-# plt.plot(x, u_true(x), label='True solution')
-# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-# plt.legend()
-# # modify the size of point x = 0.5
-# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-# plt.savefig('Linspace_Fredholm.png', dpi=300)
-# u_true_half = u_true(0.5)
-# u_haar_approx_half = u_approx_func(0.5)
-# print(abs(u_true_half - u_haar_approx_half))
+u_approx_func = test.solve(N = N, s=2, approx_func=True)
+x = np.linspace(0, 1, 101)
+plt.figure()
+plt.plot(x, u_true(x), label='True solution')
+plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+plt.legend()
+# modify the size of point x = 0.5
+plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+plt.savefig('Linspace_Fredholm.png', dpi=300)
+u_true_half = u_true(0.5)
+u_haar_approx_half = u_approx_func(0.5)
+print(abs(u_true_half - u_haar_approx_half))
 
 # # Volterra
 # N = 64
@@ -517,13 +517,13 @@ class IntegralEquation:
 # u_haar_approx_half = u_approx_func(0.5)
 # print(abs(u_true_half - u_haar_approx_half))
 
-M = 1
-N = 2 * M
-f = lambda x: np.exp(x) + np.exp(-x)
-K = lambda x, t: -np.exp(-(x + t))
-u_true = lambda x: np.exp(x)
-test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-test.solve(N = N, s=2, plot=True)
-# u_apporx = test.solve(N = N, s=2, approx=True)
-# err = u_true(collocation(N)) - u_apporx
-# print(err)
+# M = 1
+# N = 2 * M
+# f = lambda x: np.exp(x) + np.exp(-x)
+# K = lambda x, t: -np.exp(-(x + t))
+# u_true = lambda x: np.exp(x)
+# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+# test.solve(N = N, s=2, plot=True)
+# # u_apporx = test.solve(N = N, s=2, approx=True)
+# # err = u_true(collocation(N)) - u_apporx
+# # print(err)

@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 
 # Linear Fredholm (1st derivative)
 
-col_size = [1, 2, 4, 8, 16, 32, 64]
+# col_size = [1, 2, 4, 8, 16, 32, 64]
+col_size = [8, 16, 32, 64]
 err_local = np.zeros(len(col_size))
 err_global = np.zeros(len(col_size))
 
@@ -27,14 +28,13 @@ for test_type in ["Fredholm", "Volterra"]:
         for M in col_size:
             u_approx_func = test.solve(N = 2*M, s=s, approx_func=True)
 
-            x = np.linspace(0, 1, 100)
-
+            x = np.linspace(0, 1, 101)
+            # print("x", x)
             # compute the local error at x = 0.5
-            u_true_half = u_true(x[50])
-            u_haar_approx_half = u_approx_func(x[50])
+            u_true_half = u_true(1/8)
+            u_haar_approx_half = u_approx_func(1/8)
             # store the error
             err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
-
             # compute the global error with zero-norm
             u_true_vec = u_true(x)
             u_haar_approx_vec = u_approx_func(x)
@@ -59,9 +59,9 @@ for test_type in ["Fredholm", "Volterra"]:
 
         # plot two line with slope -1 and -2
         x = np.linspace(0, np.log(col_size)[-1], 100)
-        y1 = -2 * x + np.log(err_local[0])
+        y1 = -4 * x + np.log(err_local[0])
         y2 = -3 * x + np.log(err_global[0])
-        plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
+        plt.plot(x, y1, label="slope -4", linestyle="dashed", color="grey")
         plt.plot(x, y2, label="slope -3", linestyle="dashed", color="black")
 
         plt.legend()
