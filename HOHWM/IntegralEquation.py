@@ -428,27 +428,27 @@ class IntegralEquation:
 
 
 
-# Fredholm
-N = 64
-f = lambda x: np.exp(x) + np.exp(-x)
-K = lambda x, t: -np.exp(-(x + t))
-u_true = lambda x: np.exp(x)
-test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+# # Fredholm
+# N = 64
+# f = lambda x: np.exp(x) + np.exp(-x)
+# K = lambda x, t: -np.exp(-(x + t))
+# u_true = lambda x: np.exp(x)
+# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
 
-u_approx_func = test.solve(N = N, s=2, approx_func=True)
-x = np.linspace(0, 1, 101)
-plt.figure()
-plt.plot(x, u_true(x), label='True solution')
-plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-plt.legend()
-# modify the size of point x = 0.5
-plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-plt.savefig('Linspace_Fredholm.png', dpi=300)
-u_true_half = u_true(0.5)
-u_haar_approx_half = u_approx_func(0.5)
-print(abs(u_true_half - u_haar_approx_half))
+# u_approx_func = test.solve(N = N, s=2, approx_func=True)
+# x = np.linspace(0, 1, 101)
+# plt.figure()
+# plt.plot(x, u_true(x), label='True solution')
+# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+# plt.legend()
+# # modify the size of point x = 0.5
+# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+# plt.savefig('Linspace_Fredholm.png', dpi=300)
+# u_true_half = u_true(0.5)
+# u_haar_approx_half = u_approx_func(0.5)
+# print(abs(u_true_half - u_haar_approx_half))
 
 # # Volterra
 # N = 64

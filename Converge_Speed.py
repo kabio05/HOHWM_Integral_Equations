@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 
 # Linear Fredholm (1st derivative)
 
-# col_size = [1, 2, 4, 8, 16, 32, 64]
-col_size = [8, 16, 32, 64]
+col_size = [1, 2, 4, 8, 16, 32, 64]
 err_local = np.zeros(len(col_size))
 err_global = np.zeros(len(col_size))
+s_text = ["1st", "2nd"]
 
 for test_type in ["Fredholm", "Volterra"]:
     if test_type == "Fredholm":
@@ -31,8 +31,8 @@ for test_type in ["Fredholm", "Volterra"]:
             x = np.linspace(0, 1, 101)
             # print("x", x)
             # compute the local error at x = 0.5
-            u_true_half = u_true(1/8)
-            u_haar_approx_half = u_approx_func(1/8)
+            u_true_half = u_true(0.5)
+            u_haar_approx_half = u_approx_func(0.5)
             # store the error
             err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
             # compute the global error with zero-norm
@@ -40,32 +40,42 @@ for test_type in ["Fredholm", "Volterra"]:
             u_haar_approx_vec = u_approx_func(x)
             err_global[col_size.index(M)] = np.linalg.norm(
                 np.abs(u_true_vec - u_haar_approx_vec)) # probably wrong
-
+        err_global /= 100
+        
         # print the results
         print("Linear {} ({}st derivative)".format(test_type, s))
         print("Local error: ", err_local)
         print("Global error: ", err_global)
         print("")
-        print("Local experimental rate of convergence: ", np.diff(np.log(err_local))/np.log(2))
-        print("Global experimental rate of convergence : ", np.diff(np.log(err_global))/np.log(2))
+        print("Local experimental rate of convergence: ",
+              np.diff(np.log(err_local))/np.log(2))
+        print("Global experimental rate of convergence : ", 
+              np.diff(np.log(err_global))/np.log(2))
         print("\n")
         # plot the errors in log-log scale
         plt.figure()
-        plt.title("Linear {} ({}st derivative)".format(test_type, s))
+        plt.title("Linear {} ({} derivative)".format(test_type, s_text[s-1]))
         plt.xlabel("log(N)")
         plt.ylabel("log(error)")
         plt.plot(np.log(col_size), np.log(err_local), label="Local error", color="red")
         plt.plot(np.log(col_size), np.log(err_global), label="Global error", color="blue")
 
-        # plot two line with slope -1 and -2
-        x = np.linspace(0, np.log(col_size)[-1], 100)
-        y1 = -4 * x + np.log(err_local[0])
-        y2 = -3 * x + np.log(err_global[0])
-        plt.plot(x, y1, label="slope -4", linestyle="dashed", color="grey")
-        plt.plot(x, y2, label="slope -3", linestyle="dashed", color="black")
+        if s == 1:
+            x = np.linspace(0, np.log(col_size)[-1], 100)
+            y1 = -2 * x + np.log(err_local[0])
+            y2 = -2 * x + np.log(err_global[0])
+            plt.plot(x, y1, label="slope -2", linestyle="dashed", color="grey")
+            plt.plot(x, y2, label="slope -2", linestyle="dashed", color="black")
+        if s == 2:
+            x = np.linspace(0, np.log(col_size)[-1], 100)
+            y1 = -4 * x + np.log(err_local[0])
+            y2 = -3 * x + np.log(err_global[0])
+            plt.plot(x, y1, label="slope -4", linestyle="dashed", color="grey")
+            plt.plot(x, y2, label="slope -3", linestyle="dashed", color="black")
 
         plt.legend()
-        plt.savefig("Linear_{}_{}st_derivative.png".format(test_type, s), dpi=300)
+        plt.savefig("Linear_{}_{}_derivative.png".format(test_type, s_text[s-1]), dpi=300)
+
 
 
 
