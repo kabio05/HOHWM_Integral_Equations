@@ -1,7 +1,8 @@
 import numpy as np  # noqa
-import matplotlib.pyplot as plt # noqa
-import scipy as sp # noqa
-from scipy import integrate # noqa
+import matplotlib.pyplot as plt  # noqa
+import scipy as sp  # noqa
+from scipy import integrate  # noqa
+
 # flake8: noqa
 
 
@@ -22,15 +23,16 @@ def haar_vec(x, i):
     if i == 1:
         return np.ones(len(x))
     if i >= 2:
-        j, k = index(i) # j is the scale, k is the translation
-        m = 2 ** j
+        j, k = index(i)  # j is the scale, k is the translation
+        m = 2**j
         alpha = k / m
         beta = (k + 0.5) / m
         gamma = (k + 1) / m
-        a = 1. * (x>=alpha) * (x<beta) 
-        b = -1 * (x>=beta) * (x<=gamma)
+        a = 1.0 * (x >= alpha) * (x < beta)
+        b = -1 * (x >= beta) * (x <= gamma)
         c = a + b
         return c
+
 
 def haar_int_1(x, i):
     """
@@ -42,13 +44,13 @@ def haar_int_1(x, i):
     if i == 1:
         return x
     if i >= 2:
-        j, k = index(i) # j is the scale, k is the translation
-        m = 2 ** j
+        j, k = index(i)  # j is the scale, k is the translation
+        m = 2**j
         alpha = k / m
         beta = (k + 0.5) / m
         gamma = (k + 1) / m
-        a = 1. * (x>=alpha) * (x<beta)
-        b = -1. * (x>=beta) * (x<=gamma)
+        a = 1.0 * (x >= alpha) * (x < beta)
+        b = -1.0 * (x >= beta) * (x <= gamma)
         c = a * (x - alpha) + b * (x - gamma)
         return c
 
@@ -68,17 +70,22 @@ def haar_int_2(x, i):
     return: the second-order integration of the Haar wavelet function
     """
     if i == 1:
-        return 0.5 * x ** 2
+        return 0.5 * x**2
     if i >= 2:
-        j, k = index(i) # j is the scale, k is the translation
-        m = 2 ** j
+        j, k = index(i)  # j is the scale, k is the translation
+        m = 2**j
         alpha = k / m
         beta = (k + 0.5) / m
         gamma = (k + 1) / m
-        a = 0 * (x<alpha)
-        b = 1. * (x>=alpha) * (x<beta) * (x - alpha) ** 2 / 2
-        c = 1. * (x>=beta) * (x<gamma) * (-(x - gamma) ** 2 / 2 + 1/(4 * m ** 2))
-        d = 1. * (x>=gamma) * (x<= 1) * (1/(4 * m ** 2))
+        a = 0 * (x < alpha)
+        b = 1.0 * (x >= alpha) * (x < beta) * (x - alpha) ** 2 / 2
+        c = (
+            1.0
+            * (x >= beta)
+            * (x < gamma)
+            * (-((x - gamma) ** 2) / 2 + 1 / (4 * m**2))
+        )
+        d = 1.0 * (x >= gamma) * (x <= 1) * (1 / (4 * m**2))
         int_2 = a + b + c + d
         return int_2
 
@@ -95,7 +102,7 @@ def collocation(N):
 
 
 class IntegralEquation:
-    """ # noqa
+    """# noqa
     Initialize an instance of the IntegralEquation class.
     """
 
@@ -105,12 +112,12 @@ class IntegralEquation:
         self.f = f
         self.K = K
 
-    def solve(self, N, s, plot=False, approx=False, approx_func=False, method='ls'):
+    def solve(self, N, s, plot=False, approx=False, approx_func=False, method="ls"):
         # Make sure N is a power of 2
         N = N
         if N & (N - 1) != 0:
-            raise ValueError('N must be a power of 2.')
-        
+            raise ValueError("N must be a power of 2.")
+
         if self.linearity is True:
             f = self.f
             K = self.K
@@ -118,30 +125,30 @@ class IntegralEquation:
             t = collocation(N)
             x = collocation(N)
 
-            if self.type == 'Fredholm':
+            if self.type == "Fredholm":
                 if s == 1:
-                    if method == 'ls':
+                    if method == "ls":
                         S_1 = np.zeros(N)
                         for j in range(N):
                             for k in range(N):
-                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j+1)
-                        S_1 = 1/N * S_1
+                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j + 1)
+                        S_1 = 1 / N * S_1
 
                         S_2 = 0
                         for k in range(N):
                             S_2 += K(0, t[k])
-                        S_2 = 1/N * S_2
+                        S_2 = 1 / N * S_2
 
                         M_A = np.zeros((N, N))
                         for j in range(N):
                             for k in range(N):
-                                M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j+1)
-                        M_A = haar_int_1_mat(x, N) - 1/N * M_A
+                                M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j + 1)
+                        M_A = haar_int_1_mat(x, N) - 1 / N * M_A
 
                         V_B = np.zeros(N)
                         for k in range(N):
                             V_B += K(x, t[k])
-                        V_B = 1 - 1/N * V_B
+                        V_B = 1 - 1 / N * V_B
 
                         A_ls = M_A + np.outer(V_B, S_1) / (1 - S_2)
                         B_ls = f(x) - f(0) * V_B / (1 - S_2)
@@ -154,18 +161,18 @@ class IntegralEquation:
                             u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
                         C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
                         u_haar_approx += C_1
-                    
-                    if method == 'fsolve':
+
+                    if method == "fsolve":
                         S_1 = np.zeros(N)
                         for j in range(N):
                             for k in range(N):
-                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j+1)
-                        S_1 = 1/N * S_1
+                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j + 1)
+                        S_1 = 1 / N * S_1
 
                         S_2 = 0
                         for k in range(N):
                             S_2 += K(0, t[k])
-                        S_2 = 1/N * S_2
+                        S_2 = 1 / N * S_2
 
                         def sys_eqs(vars):
                             C_1 = vars[0]
@@ -176,94 +183,98 @@ class IntegralEquation:
                             t = collocation(N)
 
                             eqs = np.zeros(N + 1)
-                            
+
                             # C1 part
-                            eqs[0] = C_1 - 1/(1 - S_2) * (f(0) - np.dot(coef_haar, S_1))
-                            
+                            eqs[0] = C_1 - 1 / (1 - S_2) * (
+                                f(0) - np.dot(coef_haar, S_1)
+                            )
+
                             # Haar part
                             M_A = np.zeros((N, N))
                             for j in range(N):
                                 for k in range(N):
-                                    M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j+1)
-                            M_A = haar_int_1_mat(x, N) - 1/N * M_A
-                            
+                                    M_A[:, j] += K(x, t[k]) * haar_int_1(t[k], j + 1)
+                            M_A = haar_int_1_mat(x, N) - 1 / N * M_A
+
                             V_B = np.zeros(N)
                             for k in range(N):
                                 V_B += K(x, t[k])
-                            V_B = 1 - 1/N * V_B
-                            
+                            V_B = 1 - 1 / N * V_B
+
                             eqs[1:] = np.dot(M_A, coef_haar) - (
-                                f(x) - 1/(1 - S_2) * (f(0) + np.dot(coef_haar, S_1)) * V_B
+                                f(x)
+                                - 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1)) * V_B
                             )
                             return eqs
 
                         vars = sp.optimize.fsolve(sys_eqs, np.ones(N + 1))
                         C_1 = vars[0]
                         coef_haar = vars[1:]
-                        
+
                         u_haar_approx = np.zeros(N)
                         for k in range(N):
                             u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
                         u_haar_approx += C_1
-                        
+
                     if plot is True:
-                        plt.plot(x, u_haar_approx, label='Approximation')
+                        plt.plot(x, u_haar_approx, label="Approximation")
                         plt.show()
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
+
                         def u_haar_approx_func(x):
                             # superposition of the Haar wavelet functions
                             approx_func_val = C_1
                             for k in range(N):
                                 approx_func_val += coef_haar[k] * haar_int_1(x, k + 1)
                             return approx_func_val
+
                         return u_haar_approx_func
                     else:
                         return coef_haar
                 elif s == 2:
-                    if method == 'ls':
+                    if method == "ls":
                         S_1 = np.zeros(N)
                         for j in range(N):
                             for k in range(N):
-                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j+1)
-                        S_1 = 1/N * S_1
+                                S_1[j] += K(0, t[k]) * haar_int_1(t[k], j + 1)
+                        S_1 = 1 / N * S_1
 
                         S_2 = 0
                         for k in range(N):
                             S_2 += K(0, t[k])
-                        S_2 = 1/N * S_2
-
+                        S_2 = 1 / N * S_2
 
                         S_3 = 0
                         for k in range(N):
                             S_3 += K(1, t[k])
-                        S_3 = 1/N * S_3
+                        S_3 = 1 / N * S_3
 
                         S_4 = 0
                         for k in range(N):
                             S_4 += K(0, t[k]) * t[k]
-                        S_4 = 1/N * S_4
+                        S_4 = 1 / N * S_4
 
                         S_5 = 0
                         for k in range(N):
                             S_5 += K(1, t[k]) * t[k]
-                        S_5 = 1/N * S_5
+                        S_5 = 1 / N * S_5
 
                         S_6 = np.zeros(N)
                         for j in range(N):
                             for k in range(N):
-                                S_6[j] += K(0, t[k]) * haar_int_2(t[k], j+1)
-                        S_6 = 1/N * S_6
+                                S_6[j] += K(0, t[k]) * haar_int_2(t[k], j + 1)
+                        S_6 = 1 / N * S_6
 
                         S_7 = np.zeros(N)
                         for j in range(N):
                             for k in range(N):
-                                S_7[j] += K(1, t[k]) * haar_int_2(t[k], j+1)
-                        S_7 = 1/N * S_7
+                                S_7[j] += K(1, t[k]) * haar_int_2(t[k], j + 1)
+                        S_7 = 1 / N * S_7
 
                         S_8 = 1 - S_2 + S_4 * (1 - S_3) - S_5 * (1 - S_2)
-                        
+
                         A = f(0) * (1 - S_5) + f(1) * S_4
 
                         D = -f(0) * (1 - S_3) + f(1) * (1 - S_2)
@@ -276,72 +287,75 @@ class IntegralEquation:
                         V_E = (1 - S_5) * S_6 - S_4 * V_B
 
                         V_F = (1 - S_3) * S_6 + (1 - S_2) * V_B
-                        
+
                         M_A = np.zeros((N, N))
                         for i in range(N):
                             for k in range(N):
                                 M_A[:, i] += K(x, t[k]) * haar_int_2(t[k], i + 1)
-                        M_A = haar_int_2_mat(x, N) - 1/N * M_A
-                        
+                        M_A = haar_int_2_mat(x, N) - 1 / N * M_A
+
                         V_P = np.zeros(N)
                         for k in range(N):
                             V_P += K(x, t[k])
-                        V_P = 1 - 1/N * V_P
+                        V_P = 1 - 1 / N * V_P
 
                         V_Q = np.zeros(N)
                         for k in range(N):
                             V_Q += K(x, t[k]) * t[k]
-                        V_Q = x - 1/N * V_Q
-                        
-                        LHS_ls = M_A + np.outer(V_P, V_E) / S_8 - np.outer(V_Q, V_F) / S_8 # if bug, check here
+                        V_Q = x - 1 / N * V_Q
+
+                        LHS_ls = (
+                            M_A + np.outer(V_P, V_E) / S_8 - np.outer(V_Q, V_F) / S_8
+                        )  # if bug, check here
                         RHS_ls = f(x) - A * V_P / S_8 - D * V_Q / S_8
-                        
+
                         coef_haar = np.linalg.solve(LHS_ls, RHS_ls)
-                        
+
                         u_haar_approx = np.zeros(N)
                         for k in range(N):
                             u_haar_approx += coef_haar[k] * haar_int_2(x, k + 1)
                         C1 = 1 / S_8 * (A + np.dot(coef_haar, V_E))
                         C2 = 1 / S_8 * (D - np.dot(coef_haar, V_F))
                         u_haar_approx += C1 + C2 * x
-                    
-                    if method == 'fsolve':
+
+                    if method == "fsolve":
                         raise NotImplementedError()
-                    
+
                     if plot is True:
-                        plt.plot(x, u_haar_approx, label='Approximation')
+                        plt.plot(x, u_haar_approx, label="Approximation")
                         plt.show()
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
+
                         def u_haar_approx_func(x):
                             # superposition of the Haar wavelet functions
                             approx_func_val = C1 + C2 * x
                             for k in range(N):
                                 approx_func_val += coef_haar[k] * haar_int_2(x, k + 1)
                             return approx_func_val
+
                         return u_haar_approx_func
                     else:
                         return coef_haar
 
                 else:
-                    raise NotImplementedError(
-                        "Only s = 1 and s = 2 are implemented."
-                    )
+                    raise NotImplementedError("Only s = 1 and s = 2 are implemented.")
 
-            elif self.type == 'Volterra':
+            elif self.type == "Volterra":
                 if s == 1:
-
                     M_A = np.zeros((N, N))
                     for i in range(N):
                         for j in range(N):
-                            M_A[i, j] = np.sum(K(x[i], t[:i]) * haar_int_1(t[:i], j+1))
-                    M_A = haar_int_1_mat(x, N) - 1/N * M_A
+                            M_A[i, j] = np.sum(
+                                K(x[i], t[:i]) * haar_int_1(t[:i], j + 1)
+                            )
+                    M_A = haar_int_1_mat(x, N) - 1 / N * M_A
 
                     V_B = np.zeros(N)
                     for i in range(N):
                         V_B[i] = np.sum(K(x[i], t[:i]))
-                    V_B = f(x) - f(0) - f(0) * (1/N * V_B)
+                    V_B = f(x) - f(0) - f(0) * (1 / N * V_B)
 
                     coef_haar = np.linalg.solve(M_A, V_B)
 
@@ -352,10 +366,11 @@ class IntegralEquation:
                     u_haar_approx += C_1
 
                     if plot is True:
-                        plt.plot(x, u_haar_approx, label='Approximation')
+                        plt.plot(x, u_haar_approx, label="Approximation")
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
+
                         def u_haar_approx_func(x):
                             # superposition of the Haar wavelet functions
                             # breakpoint()
@@ -365,54 +380,57 @@ class IntegralEquation:
                             return approx_func_val
 
                             # interpolation
-                            # return np.interp(x, collocation(N), u_haar_approx) 
+                            # return np.interp(x, collocation(N), u_haar_approx)
+
                         return u_haar_approx_func
                     else:
                         return coef_haar
-                
+
                 elif s == 2:
                     S_3 = 0
                     for k in range(N):
                         S_3 += K(1, t[k])
-                    S_3 = 1/N * S_3
+                    S_3 = 1 / N * S_3
 
                     S_5 = 0
                     for k in range(N):
                         S_5 += K(1, t[k]) * t[k]
-                    S_5 = 1/N * S_5
-                    
+                    S_5 = 1 / N * S_5
+
                     S_7 = np.zeros(N)
                     for j in range(N):
                         for k in range(N):
-                            S_7[j] += K(1, t[k]) * haar_int_2(t[k], j+1)
-                    S_7 = 1/N * S_7
+                            S_7[j] += K(1, t[k]) * haar_int_2(t[k], j + 1)
+                    S_7 = 1 / N * S_7
 
                     A = -f(0) * (1 - S_3) + f(1)
-                    
+
                     V_B = np.zeros(N)
                     for i in range(N):
                         V_B[i] = haar_int_2(1, i + 1)
                     V_B -= S_7
-                    
+
                     M_A = np.zeros((N, N))
                     for i in range(N):
                         for j in range(N):
-                            M_A[i, j] = np.sum(K(x[i], t[:i]) * haar_int_2(t[:i], j+1))
-                    M_A = haar_int_2_mat(x, N) - 1/N * M_A
+                            M_A[i, j] = np.sum(
+                                K(x[i], t[:i]) * haar_int_2(t[:i], j + 1)
+                            )
+                    M_A = haar_int_2_mat(x, N) - 1 / N * M_A
 
                     V_P = np.zeros(N)
                     for i in range(N):
                         V_P[i] = np.sum(K(x[i], t[:i]))
-                    V_P = 1 - 1/N * V_P
+                    V_P = 1 - 1 / N * V_P
 
                     V_Q = np.zeros(N)
                     for i in range(N):
                         V_Q[i] = np.sum(K(x[i], t[:i]) * t[:i])
-                    V_Q = x - 1/N * V_Q
+                    V_Q = x - 1 / N * V_Q
 
                     LHS_ls = M_A - np.outer(V_Q, V_B) / (1 - S_5)
                     RHS_ls = f(x) - f(0) * V_P - A * V_Q / (1 - S_5)
-                    
+
                     coef_haar = np.linalg.solve(LHS_ls, RHS_ls)
                     # breakpoint()
                     u_haar_approx = np.zeros(N)
@@ -421,31 +439,31 @@ class IntegralEquation:
                     C1 = f(0)
                     C2 = A / (1 - S_5) - np.dot(coef_haar, V_B) / (1 - S_5)
                     u_haar_approx += C1 + C2 * x
-                    
+
                     # print the coefficients and constants
                     # print("C1 = ", C1)
                     # print("C2 = ", C2)
                     # print("coef_haar = ", coef_haar)
-                    
+
                     if plot is True:
-                        plt.plot(x, u_haar_approx, label='Approximation')
+                        plt.plot(x, u_haar_approx, label="Approximation")
                     elif approx is True:
                         return u_haar_approx
                     elif approx_func is True:
+
                         def u_haar_approx_func(x):
                             # superposition of the Haar wavelet functions
                             approx_func_val = C1 + C2 * x
                             for k in range(N):
                                 approx_func_val += coef_haar[k] * haar_int_2(x, k + 1)
                             return approx_func_val
+
                         return u_haar_approx_func
                     else:
                         return coef_haar
 
                 else:
-                    raise NotImplementedError(
-                        "Only s = 1 and s = 2 are implemented."
-                    )
+                    raise NotImplementedError("Only s = 1 and s = 2 are implemented.")
 
             else:
                 raise NotImplementedError(
@@ -454,9 +472,8 @@ class IntegralEquation:
 
         else:
             raise NotImplementedError(
-                'Nonlinear integral equations are not implemented yet.'
-                )
-
+                "Nonlinear integral equations are not implemented yet."
+            )
 
 
 # # Fredholm
