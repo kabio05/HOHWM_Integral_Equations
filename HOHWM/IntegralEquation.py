@@ -5,6 +5,9 @@ from scipy import integrate  # noqa
 
 # flake8: noqa
 
+# make all the print statements print the 3 digits after the decimal point
+np.set_printoptions(precision=3)
+
 
 def index(i):
     """Calculate the step-value of the i-th Haar wavelet."""
@@ -118,6 +121,8 @@ class IntegralEquation:
         if N & (N - 1) != 0:
             raise ValueError("N must be a power of 2.")
 
+        print_results = False
+        
         if self.linearity is True:
             f = self.f
             K = self.K
@@ -154,13 +159,35 @@ class IntegralEquation:
                         B_ls = f(x) - f(0) * V_B / (1 - S_2)
 
                         coef_haar = np.linalg.solve(A_ls, B_ls)
-
+                            
                         # calculate the approximation
                         u_haar_approx = np.zeros(N)
                         for k in range(N):
                             u_haar_approx += coef_haar[k] * haar_int_1(x, k + 1)
                         C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
                         u_haar_approx += C_1
+
+                        if print_results is True:
+                            # print all the coefficients and constants
+                            print("s = ", s)
+                            print("S_1 = ", S_1)
+                            print("S_2 = ", S_2)
+                            print("M_A = ", M_A)
+                            print("V_B = ", V_B)
+                            print("A_ls = ", A_ls)
+                            print("B_ls = ", B_ls)
+                            print("coef_haar = ", coef_haar)
+                            print("C_1 = ", C_1)
+                            print("u_haar_approx = ", u_haar_approx)
+                            test_local = 0.25
+                            approx_func_val = C_1
+                            for k in range(N):
+                                approx_func_val += coef_haar[k] * haar_int_1(test_local, k + 1)
+                            print("approx_func_val = ", approx_func_val)
+                            print("\n")
+
+
+
 
                     if method == "fsolve":
                         S_1 = np.zeros(N)
@@ -310,13 +337,46 @@ class IntegralEquation:
                         RHS_ls = f(x) - A * V_P / S_8 - D * V_Q / S_8
 
                         coef_haar = np.linalg.solve(LHS_ls, RHS_ls)
-
+                        
                         u_haar_approx = np.zeros(N)
                         for k in range(N):
                             u_haar_approx += coef_haar[k] * haar_int_2(x, k + 1)
                         C1 = 1 / S_8 * (A + np.dot(coef_haar, V_E))
                         C2 = 1 / S_8 * (D - np.dot(coef_haar, V_F))
                         u_haar_approx += C1 + C2 * x
+
+                        if print_results is True:
+                            # print all the coefficients and constants
+                            print("s = ", s)
+                            print("S_1 = ", S_1)
+                            print("S_2 = ", S_2)
+                            print("S_3 = ", S_3)
+                            print("S_4 = ", S_4)
+                            print("S_5 = ", S_5)
+                            print("S_6 = ", S_6)
+                            print("S_7 = ", S_7)
+                            print("S_8 = ", S_8)
+                            print("A = ", A)
+                            print("D = ", D)
+                            print("M_A = ", M_A)
+                            print("V_B = ", V_B)
+                            print("V_E = ", V_E)
+                            print("V_F = ", V_F)
+                            print("M_A = ", M_A)
+                            print("V_P = ", V_P)
+                            print("V_Q = ", V_Q)
+                            print("LHS_ls = ", LHS_ls)
+                            print("RHS_ls = ", RHS_ls)
+                            print("coef_haar = ", coef_haar)
+                            print("C1 = ", C1)
+                            print("C2 = ", C2)
+                            print("u_haar_approx = ", u_haar_approx)
+                            test_local = 0.25
+                            approx_func_val = C1 + C2 * test_local
+                            for k in range(N):
+                                approx_func_val += coef_haar[k] * haar_int_2(test_local, k + 1)
+                            print("approx_func_val = ", approx_func_val)
+                            print("\n")
 
                     if method == "fsolve":
                         raise NotImplementedError()
@@ -477,15 +537,15 @@ class IntegralEquation:
 
 
 # # Fredholm
-# N = 64
-# # f = lambda x: np.exp(x) + np.exp(-x)
-# # K = lambda x, t: -np.exp(-(x + t))
-# # u_true = lambda x: np.exp(x)
-# # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-# f = lambda x: 5/6 * x - 1/9
-# K = lambda x, t: 1/3 * (x + t)
-# u_true = lambda x: x
+# N = 4
+# f = lambda x: np.exp(x) + np.exp(-x)
+# K = lambda x, t: -np.exp(-(x + t))
+# u_true = lambda x: np.exp(x)
 # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+# # f = lambda x: 5/6 * x - 1/9
+# # K = lambda x, t: 1/3 * (x + t)
+# # u_true = lambda x: x
+# # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
 
 # u_approx_func = test.solve(N = N, s=2, approx_func=True)

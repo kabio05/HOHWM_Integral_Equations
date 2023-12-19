@@ -9,7 +9,7 @@ def f_ture(x):
     return np.exp(3 * x)
 
 
-col_size = [1, 2, 4, 8, 16, 32, 64]
+col_size = [32, 64, 128, 256]
 ord_text = ["1st derivative", "2nd derivative"]
 err_local = np.zeros(len(col_size))
 err_global = np.zeros(len(col_size))
@@ -54,9 +54,9 @@ for s in [1, 2]:
                 return approx_func_val
 
         # check the convergence speed
-        x_test = np.linspace(0, 1, 101)
-
-        loc = 0.5
+        x_test = np.linspace(1/128, 1, 1)
+        print(x_test)
+        loc = 1/128
         f_ture_local = f_ture(loc)
         f_approx_local = approx_func(loc)
         err_local[col_size.index(M)] = np.abs(f_ture_local - f_approx_local)
