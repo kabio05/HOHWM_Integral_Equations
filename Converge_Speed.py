@@ -18,18 +18,18 @@ for test_type in ["Fredholm"]:
     if test_type == "Fredholm":
         ###### Test 1: these cases give the result as the paper
         
-        f = lambda x: np.exp(x) + np.exp(-x)
-        K = lambda x, t: -np.exp(-(x + t))
-        u_true = lambda x: np.exp(x)
-        test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+        # f = lambda x: np.exp(x) + np.exp(-x)
+        # K = lambda x, t: -np.exp(-(x + t))
+        # u_true = lambda x: np.exp(x)
+        # test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
         ###### Test 2: s = 1 is equal to s = 2
         ###### UP TO NOW, THIS IS BECAUSE THE ERROR IS TOO SMALL TO BE OBSERVED
         
-        # f = lambda x: 5/6 * x - 1/9
-        # K = lambda x, t: 1/3 * (x + t)
-        # u_true = lambda x: x
-        # test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+        f = lambda x: 5/6 * x - 1/9
+        K = lambda x, t: 1/3 * (x + t)
+        u_true = lambda x: x
+        test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
         # f = lambda x: 2/3 * x
         # K = lambda x, t: x * t

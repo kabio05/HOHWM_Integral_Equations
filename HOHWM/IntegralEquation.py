@@ -536,95 +536,97 @@ class IntegralEquation:
             )
 
 
-# # Fredholm
-# N = 4
-# f = lambda x: np.exp(x) + np.exp(-x)
-# K = lambda x, t: -np.exp(-(x + t))
-# u_true = lambda x: np.exp(x)
-# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-# # f = lambda x: 5/6 * x - 1/9
-# # K = lambda x, t: 1/3 * (x + t)
-# # u_true = lambda x: x
-# # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+if __name__ == "__main__":
+
+    # Fredholm
+    N = 4
+    f = lambda x: np.exp(x) + np.exp(-x)
+    K = lambda x, t: -np.exp(-(x + t))
+    u_true = lambda x: np.exp(x)
+    test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+    # f = lambda x: 5/6 * x - 1/9
+    # K = lambda x, t: 1/3 * (x + t)
+    # u_true = lambda x: x
+    # test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
 
-# u_approx_func = test.solve(N = N, s=2, approx_func=True)
-# x = np.linspace(0, 1, 101)
-# plt.figure()
-# plt.plot(x, u_true(x), label='True solution')
-# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-# plt.legend()
-# # modify the size of point x = 0.5
-# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-# plt.savefig('Linspace_Fredholm.png', dpi=300)
-# u_true_half = u_true(0.5)
-# u_haar_approx_half = u_approx_func(0.5)
-# print(abs(u_true_half - u_haar_approx_half))
+    u_approx_func = test.solve(N = N, s=2, approx_func=True)
+    x = np.linspace(0, 1, 101)
+    plt.figure()
+    plt.plot(x, u_true(x), label='True solution')
+    plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+    plt.legend()
+    # modify the size of point x = 0.5
+    plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+    plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+    plt.savefig('Linspace_Fredholm.png', dpi=300)
+    u_true_half = u_true(0.5)
+    u_haar_approx_half = u_approx_func(0.5)
+    print(abs(u_true_half - u_haar_approx_half))
 
-# u_approx_func = test.solve(N = N, s=2, approx_func=True)
-# x = collocation(N)
-# plt.figure()
-# plt.plot(x, u_true(x), label='True solution')
-# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-# plt.legend()
-# # modify the size of point x = 0.5
-# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-# plt.savefig('Collocation_64_Fredholm.png', dpi=300)
-# u_true_half = u_true(0.5)
-# u_haar_approx_half = u_approx_func(0.5)
-# print(abs(u_true_half - u_haar_approx_half))
+    u_approx_func = test.solve(N = N, s=2, approx_func=True)
+    x = collocation(N)
+    plt.figure()
+    plt.plot(x, u_true(x), label='True solution')
+    plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+    plt.legend()
+    # modify the size of point x = 0.5
+    plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+    plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+    plt.savefig('Collocation_64_Fredholm.png', dpi=300)
+    u_true_half = u_true(0.5)
+    u_haar_approx_half = u_approx_func(0.5)
+    print(abs(u_true_half - u_haar_approx_half))
 
-# Volterra
-# N = 64
-# # f = lambda x: 1/2 * x**2 * np.exp(-x)
-# # K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
-# # u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
-# #     np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
-# # test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
+    # Volterra
+    N = 64
+    # f = lambda x: 1/2 * x**2 * np.exp(-x)
+    # K = lambda x, t: 1/2 * (x - t)**2 * np.exp(-x + t)
+    # u_true = lambda x: 1/3 - 1/3 * np.exp(-3/2 * x) * (
+    #     np.cos(np.sqrt(3)/2 * x) + np.sqrt(3) * np.sin(np.sqrt(3)/2 * x))
+    # test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
 
-# f = lambda x: x + 1
-# K = lambda x, t: x - t
-# u_true = lambda x: np.exp(x)
-# test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
+    f = lambda x: x + 1
+    K = lambda x, t: x - t
+    u_true = lambda x: np.exp(x)
+    test = IntegralEquation(linear=True, type="Volterra", f=f, K=K)
 
-# u_approx_func = test.solve(N = N, s=1, approx_func=True)
-# x = np.linspace(0, 1, 101)
-# # another figure
-# plt.figure()
-# plt.plot(x, u_true(x), label='True solution')
-# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-# plt.legend()
-# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-# plt.savefig('Linspace_Volterra.png', dpi=300)
-# u_true_half = u_true(0.5)
-# u_haar_approx_half = u_approx_func(0.5)
-# print(abs(u_true_half - u_haar_approx_half))
+    u_approx_func = test.solve(N = N, s=1, approx_func=True)
+    x = np.linspace(0, 1, 101)
+    # another figure
+    plt.figure()
+    plt.plot(x, u_true(x), label='True solution')
+    plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+    plt.legend()
+    plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+    plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+    plt.savefig('Linspace_Volterra.png', dpi=300)
+    u_true_half = u_true(0.5)
+    u_haar_approx_half = u_approx_func(0.5)
+    print(abs(u_true_half - u_haar_approx_half))
 
 
-# u_approx_func = test.solve(N = N, s=1, approx_func=True)
-# x = collocation(N)
-# # another figure
-# plt.figure()
-# plt.plot(x, u_true(x), label='True solution')
-# plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
-# plt.legend()
-# plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
-# plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
-# plt.savefig('Collocation_64_Volterra.png', dpi=300)
-# u_true_half = u_true(0.5)
-# u_haar_approx_half = u_approx_func(0.5)
-# print(abs(u_true_half - u_haar_approx_half))
+    u_approx_func = test.solve(N = N, s=1, approx_func=True)
+    x = collocation(N)
+    # another figure
+    plt.figure()
+    plt.plot(x, u_true(x), label='True solution')
+    plt.plot(x, u_approx_func(x), label='Approximation', linestyle=':')
+    plt.legend()
+    plt.plot(0.5, u_true(0.5), 'o', color='black', markersize=1)
+    plt.plot(0.5, u_approx_func(0.5), 'o', color='Green', markersize=1)
+    plt.savefig('Collocation_64_Volterra.png', dpi=300)
+    u_true_half = u_true(0.5)
+    u_haar_approx_half = u_approx_func(0.5)
+    print(abs(u_true_half - u_haar_approx_half))
 
-# M = 1
-# N = 2 * M
-# f = lambda x: np.exp(x) + np.exp(-x)
-# K = lambda x, t: -np.exp(-(x + t))
-# u_true = lambda x: np.exp(x)
-# test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
-# test.solve(N = N, s=2, plot=True)
-# # u_apporx = test.solve(N = N, s=2, approx=True)
-# # err = u_true(collocation(N)) - u_apporx
-# # print(err)
+    M = 1
+    N = 2 * M
+    f = lambda x: np.exp(x) + np.exp(-x)
+    K = lambda x, t: -np.exp(-(x + t))
+    u_true = lambda x: np.exp(x)
+    test = IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+    test.solve(N = N, s=2, plot=True)
+    # u_apporx = test.solve(N = N, s=2, approx=True)
+    # err = u_true(collocation(N)) - u_apporx
+    # print(err)
