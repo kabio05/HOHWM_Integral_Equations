@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # flake8: noqa
-np.set_printoptions(precision=3)
+np.set_printoptions(precision=5)
 
 
 # Linear Fredholm (1st derivative)
@@ -26,10 +26,10 @@ for test_type in ["Fredholm"]:
         ###### Test 2: s = 1 is equal to s = 2
         ###### UP TO NOW, THIS IS BECAUSE THE ERROR IS TOO SMALL TO BE OBSERVED
         
-        f = lambda x: 5/6 * x - 1/9
-        K = lambda x, t: 1/3 * (x + t)
-        u_true = lambda x: x
-        test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+        # f = lambda x: 5/6 * x - 1/9
+        # K = lambda x, t: 1/3 * (x + t)
+        # u_true = lambda x: x
+        # test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
         # f = lambda x: 2/3 * x
         # K = lambda x, t: x * t
@@ -38,10 +38,10 @@ for test_type in ["Fredholm"]:
         
         ###### Test 3: s = 1 is not equal to s = 2, but still both rate are 2
         
-        # f = lambda x: 9/10 * x**2
-        # K = lambda x, t: 1/2 * (x**2 * t**2)
-        # u_true = lambda x: x**2
-        # test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
+        f = lambda x: 9/10 * x**2
+        K = lambda x, t: 1/2 * (x**2 * t**2)
+        u_true = lambda x: x**2
+        test = HOHWM.IntegralEquation(linear=True, type="Fredholm", f=f, K=K)
 
         # f = lambda x: np.exp(x) - 1
         # K = lambda x, t: t
