@@ -11,11 +11,13 @@ np.set_printoptions(precision=5)
 
 # We first try to implement the iterative method for 1st and 2nd Fredholm integral equation
 
-f = lambda x: 9/10 * x**2
-K = lambda x, t: 1/2 * (x**2 * t**2)
-u_true = lambda x: x**2
+f = lambda x: np.exp(x) + np.exp(-x)
+K = lambda x, t: -np.exp(-(x + t))
+u_true = lambda x: np.exp(x)
+
 
 # 1st
+
 
 def Fredholm_1st_iterative_method(N, f, K):
     # define the system of equations for the iterative method
@@ -51,16 +53,13 @@ def Fredholm_1st_iterative_method(N, f, K):
         eqs = np.dot(M_A, coef_haar) - (
             f(x) - 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1)) * V_B
         )
-     
-        
-        return eqs
 
+        return eqs
 
     # Solve coef_haar iteratively
     # print(len(sp.optimize.fsolve(sys_eqs, np.zeros(N), full_output=True)[1]))
     coef_haar = sp.optimize.fsolve(sys_eqs, np.zeros(N))
-    
-    
+
     # compute constant C1
     x = HOHWM.collocation(N)
     t = HOHWM.collocation(N)
@@ -77,8 +76,7 @@ def Fredholm_1st_iterative_method(N, f, K):
     S_2 = 1 / N * S_2
 
     C_1 = 1 / (1 - S_2) * (f(0) + np.dot(coef_haar, S_1))
-    
-    
+
     # define approximated function
     def u_haar_approx_func(x):
         # superposition of the Haar wavelet functions
@@ -89,8 +87,10 @@ def Fredholm_1st_iterative_method(N, f, K):
 
     return u_haar_approx_func
 
+
 # ________________________________________________________________________________
 # ________________________________________________________________________________
+
 
 # 2nd
 def Fredholm_2nd_iterative_method(N, f, K):
@@ -172,9 +172,9 @@ def Fredholm_2nd_iterative_method(N, f, K):
 
         C1 = 1 / S_8 * (A + np.dot(coef_haar, V_E))
         C2 = 1 / S_8 * (D - np.dot(coef_haar, V_F))
-        
+
         eqs = np.dot(M_A, coef_haar) - f(x) + C1 * V_P + C2 * V_Q
-        
+
         return eqs
 
     # Solve coef_haar iteratively
@@ -254,15 +254,15 @@ def Fredholm_2nd_iterative_method(N, f, K):
     V_Q = x - 1 / N * V_Q
 
     C1 = 1 / S_8 * (A + np.dot(coef_haar, V_E))
-    C2 = 1 / S_8 * (D - np.dot(coef_haar, V_F))    
-    
+    C2 = 1 / S_8 * (D - np.dot(coef_haar, V_F))
+
     # define approximated function
     def u_haar_approx_func(x):
         approx_func_val = C1 + C2 * x
         for k in range(N):
             approx_func_val += coef_haar[k] * HOHWM.haar_int_2(x, k + 1)
         return approx_func_val
-    
+
     return u_haar_approx_func
 
 
@@ -278,20 +278,20 @@ y = u_approx_func(x)
 plt.plot(x, y, label="approximation")
 plt.plot(x, u_true(x), label="true")
 plt.legend()
-plt.show()
+# plt.show()
 
 # Compute the error
 print_results = True
 if print_results is True:
     print("Iterative method for linear Fredholm equation")
-    
+
     col_size = [2, 4, 8, 16, 32, 64]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
 
     for s in ["1st", "2nd"]:
-        test_x = HOHWM.collocation(N)[int(N/2)] # calculate the error at x = 0.5
-        
+        test_x = 0.5  # calculate the error at x = 0.5
+
         for M in col_size:
             if s == "1st":
                 u_approx_func = Fredholm_1st_iterative_method(M, f, K)
@@ -327,11 +327,11 @@ if print_results is True:
 
 # Linear Fredholm (2nd derivative)
 # Error at 0.5:  [5.41401e-03 1.42279e-03 3.60181e-04 9.03280e-05 2.25997e-05 5.65103e-06]
-# Experimental rate of convergence:  [-1.92797 -1.98193 -1.99548 -1.99887 -1.99972]       
+# Experimental rate of convergence:  [-1.92797 -1.98193 -1.99548 -1.99887 -1.99972]
 
 # krylov
 
-# Do a table for comparing the LU, conjugate gradient, and GMRES, Minres. 
+# Do a table for comparing the LU, conjugate gradient, and GMRES, Minres.
 # comparing time and number of interations for interative methods
 
 # mpiexec -n 4
