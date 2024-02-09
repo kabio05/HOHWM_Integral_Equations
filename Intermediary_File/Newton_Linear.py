@@ -5,6 +5,7 @@ import sympy as sp
 import pandas as pd
 import time
 import HOHWM
+import pyamg.krylov as pykry
 
 # flake8: noqa
 
