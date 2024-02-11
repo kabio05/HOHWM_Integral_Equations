@@ -5,6 +5,7 @@ import sympy as sp
 import pandas as pd
 import time
 import HOHWM
+import scipy.optimize as sop
 
 
 # For storing the iteration number of GMRES
@@ -92,7 +93,7 @@ def Fredholm_1st_iterative_method(
 
         jac[:, :-1] -= RHS_f_ai / N
         jac[:, -1] -= RHS_f_c1 / N
-
+        
         return jac
 
     def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
@@ -106,7 +107,7 @@ def Fredholm_1st_iterative_method(
             
             F = sys_eqs(coefs)
             J = Jac(coefs)
-            breakpoint()
+            # breakpoint()
             if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
                 break
 
@@ -115,8 +116,10 @@ def Fredholm_1st_iterative_method(
             elif method == "GMRES":
                 delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
                 iter_gmres += counter.niter
+            elif method == "LU_sparse":
+                delta = sla.spsolve(J, -F)
             else:
-                raise NotImplementedError("Only support LU, GMRES")
+                raise ValueError("method can only be LU, GMRES or LU_sparse")
 
             coefs += delta
             iter_newton += 1
@@ -134,7 +137,6 @@ def Fredholm_1st_iterative_method(
             iter_gmres = iter_newton
         if method == "LU_sparse":
             iter_gmres = iter_newton
-
         return coefs, iter_newton, iter_gmres
 
     # get the initial guess
@@ -193,12 +195,12 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Fredholm equation")
 
-    col_size = [2, 4, 8, 16, 32, 64]
+    col_size = [2, 4, 8, 16, 32]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
     times = np.zeros(len(col_size))
-    methods = ["LU"]
+    methods = ["LU", "GMRES", "LU_sparse"]
 
     error_data = np.zeros((len(col_size), len(methods)))
     ERC_data = np.zeros((len(col_size) - 1, len(methods)))
@@ -223,7 +225,7 @@ if __name__ == "__main__":
                         dK,
                         method=method,
                         tol=1e-8,
-                        max_iter=200,
+                        max_iter=500,
                         verbose=False,
                     )
                 elif s == "2nd":

@@ -294,11 +294,11 @@ def Volterra_2nd_iterative_method(
         if iter_newton == max_iter:
             print("Newton's method does not converge!")
 
-        # for convenience, return the iters_gmres in LU as 1
+        # for convenience, return the iters_gmres in LU as iter_newton
         if method == "LU":
-            iter_gmres = 1
+            iter_gmres = iter_newton
         if method == "LU_sparse":
-            iter_gmres = 1
+            iter_gmres = iter_newton
 
         return coef_haar, iter_newton, iter_gmres
 
