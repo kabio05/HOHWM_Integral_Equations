@@ -273,7 +273,11 @@ def Volterra_2nd_iterative_method(
             elif method == "GMRES":
                 delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
                 iter_gmres += counter.niter
-
+            elif method == "LU_sparse":
+                # turn J into a sparse matrix
+                delta = sla.spsolve(J, -F)
+            elif method == "GMRES_precon":
+                raise NotImplementedError("GMRES_precon is not implemented yet")
                 # breakpoint()
 
             else:
@@ -292,6 +296,8 @@ def Volterra_2nd_iterative_method(
 
         # for convenience, return the iters_gmres in LU as 1
         if method == "LU":
+            iter_gmres = 1
+        if method == "LU_sparse":
             iter_gmres = 1
 
         return coef_haar, iter_newton, iter_gmres
@@ -384,7 +390,7 @@ if __name__ == "__main__":
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
     times = np.zeros(len(col_size))
-    methods = ["LU", "GMRES"]
+    methods = ["LU", "LU_sparse", "GMRES"]
 
     error_data = np.zeros((len(col_size), len(methods)))
     ERC_data = np.zeros((len(col_size) - 1, len(methods)))

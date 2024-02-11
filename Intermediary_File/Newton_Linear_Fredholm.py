@@ -371,7 +371,11 @@ def Fredholm_2nd_iterative_method(
             elif method == "GMRES":
                 delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
                 iter_gmres += counter.niter
-
+            elif method == "LU_sparse":
+                # turn J into a sparse matrix
+                delta = sla.spsolve(J, -F)
+            elif method == "GMRES_precon":
+                raise NotImplementedError("GMRES_precon is not implemented yet")
                 # breakpoint()
 
             else:
@@ -391,7 +395,8 @@ def Fredholm_2nd_iterative_method(
         # for convenience, return the iters_gmres in LU as 1
         if method == "LU":
             iter_gmres = 1
-
+        if method == "LU_sparse":
+            iter_gmres = 1
         return coef_haar, iter_newton, iter_gmres
 
     coef_haar = np.zeros(N)  # initial guess
@@ -517,7 +522,7 @@ if __name__ == "__main__":
         file.write("Iterative method for linear Fredholm equation\n")
         file.write("\n")
 
-    for s in ["1st"]:
+    for s in ["1st", "2nd"]:
         test_x = 0.5  # calculate the error at x = 0.5
         for method in methods:
             for M in col_size:
