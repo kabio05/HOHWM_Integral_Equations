@@ -95,18 +95,18 @@ def Fredholm_1st_iterative_method(
 
         return jac
 
-    def newton(coef_haar, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
-        coef_haar = coef_haar.copy()
-
+    def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
+        
         # iter number
         iter_newton = 0
         iter_gmres = 0
-
+        
         for _ in range(max_iter):
             counter = gmres_counter()
-            F = sys_eqs(coef_haar)
-            J = Jac(coef_haar)
-
+            
+            F = sys_eqs(coefs)
+            J = Jac(coefs)
+            breakpoint()
             if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
                 break
 
@@ -115,22 +115,12 @@ def Fredholm_1st_iterative_method(
             elif method == "GMRES":
                 delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
                 iter_gmres += counter.niter
-            elif method == "LU_sparse":
-                # turn J into a sparse matrix
-                delta = sla.spsolve(J, -F)
-            elif method == "GMRES_precon":
-                raise NotImplementedError("GMRES_precon is not implemented yet")
-
-            elif method == "BICGSTAB":
-                delta = sla.bicgstab(J, -F)[0]
-                # breakpoint()
-
             else:
                 raise NotImplementedError("Only support LU, GMRES")
 
-            coef_haar += delta
+            coefs += delta
             iter_newton += 1
-
+        
         if verbose:
             print("Newton's method: ", iter_newton, "iterations")
             if method == "GMRES":
@@ -145,16 +135,15 @@ def Fredholm_1st_iterative_method(
         if method == "LU_sparse":
             iter_gmres = iter_newton
 
-        return coef_haar, iter_newton, iter_gmres
-
+        return coefs, iter_newton, iter_gmres
 
     # get the initial guess
-    coefs = np.zeros(N + 1)
-    coefs[-1] = f(0)
+    coefs_init = np.zeros(N + 1)
+    coefs_init[-1] = f(0)
 
     # solve the system of equations
-    coef_haar, iter_newton, iter_gmres = newton(
-        coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose
+    coefs, iter_newton, iter_gmres = newton(
+        coefs=coefs_init, tol=tol, max_iter=max_iter, method=method, verbose=verbose
     )
 
     # get the coefficients
@@ -170,7 +159,6 @@ def Fredholm_1st_iterative_method(
         return approx_func_val
 
     return u_haar_approx_func, iter_newton, iter_gmres
-
 
 # _____________________________________________________________________________
 # _____________________________________________________________________________
@@ -210,7 +198,7 @@ if __name__ == "__main__":
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
     times = np.zeros(len(col_size))
-    methods = ["LU", "LU_sparse", "GMRES"]
+    methods = ["LU"]
 
     error_data = np.zeros((len(col_size), len(methods)))
     ERC_data = np.zeros((len(col_size) - 1, len(methods)))
@@ -234,20 +222,12 @@ if __name__ == "__main__":
                         K,
                         dK,
                         method=method,
-                        tol=1e-10,
-                        max_iter=100,
+                        tol=1e-8,
+                        max_iter=200,
                         verbose=False,
                     )
                 elif s == "2nd":
-                    u_approx_func, _, iter = Fredholm_2nd_iterative_method(
-                        M,
-                        f,
-                        K,
-                        method=method,
-                        tol=1e-8,
-                        max_iter=100,
-                        verbose=False,
-                    )
+                    raise NotImplementedError("2nd is not implemented yet")
                 else:
                     raise ValueError("method can only be 1st or 2nd")
 

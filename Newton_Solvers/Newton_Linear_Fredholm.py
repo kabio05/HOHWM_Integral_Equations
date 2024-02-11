@@ -105,7 +105,6 @@ def Fredholm_1st_iterative_method(
             counter = gmres_counter()
             F = sys_eqs(coef_haar)
             J = Jac(coef_haar)
-
             if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
                 break
 
