@@ -43,18 +43,16 @@ def Fredholm_1st_iterative_method(
             sigma_LHS += coef_haar[i] * HOHWM.haar_int_1(x, i + 1)
         for k in range(N):
             for i in range(N):
-                sigma_RHS += K(
-                    x, t[k], C1 + coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1)
-                )  # suspicious here
+                u = C1 + coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1)
+            sigma_RHS += K(x, t[k], u)
         eqs[:-1] = C1 + sigma_LHS - f(x) - 1 / N * sigma_RHS
 
         # C1 part
         sigma_C1 = 0
         for k in range(N):
             for i in range(N):
-                sigma_C1 += K(
-                    0, t[k], C1 + coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1)
-                )
+                u = C1 + coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1)
+            sigma_C1 += K(0, t[k], u)
         eqs[-1] = C1 - (f(0) + 1 / N * sigma_C1)
 
         return eqs
@@ -84,7 +82,7 @@ def Fredholm_1st_iterative_method(
             dK_chain2 = np.zeros(N)
             u = C1
             for i in range(N):
-                haar_value = HOHWM.haar_int_1(t[k], i + 1)
+                haar_value = HOHWM.haar_int_1(t[k], i + 1)  # p_i(t_k)
                 u += coef_haar[i] * haar_value
                 dK_chain2[i] = haar_value  # check this step for specific K
             dK_chain1 = dK(x, t[k], u)
@@ -93,20 +91,21 @@ def Fredholm_1st_iterative_method(
 
         jac[:, :-1] -= RHS_f_ai / N
         jac[:, -1] -= RHS_f_c1 / N
-        
+
         return jac
 
     def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
-        
+
         # iter number
         iter_newton = 0
         iter_gmres = 0
-        
+
         for _ in range(max_iter):
             counter = gmres_counter()
-            
+
             F = sys_eqs(coefs)
-            J = Jac(coefs)
+            # J = Jac(coefs)
+            J = sop.approx_fprime(coefs, sys_eqs)
             # breakpoint()
             if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
                 break
@@ -123,7 +122,7 @@ def Fredholm_1st_iterative_method(
 
             coefs += delta
             iter_newton += 1
-        
+
         if verbose:
             print("Newton's method: ", iter_newton, "iterations")
             if method == "GMRES":
@@ -162,11 +161,180 @@ def Fredholm_1st_iterative_method(
 
     return u_haar_approx_func, iter_newton, iter_gmres
 
+
 # _____________________________________________________________________________
 # _____________________________________________________________________________
 # _____________________________________________________________________________
 # _____________________________________________________________________________
 
+# 2nd
+
+
+def Fredholm_2nd_iterative_method(
+    N, f, K, dK, method="GMRES", tol=1e-8, max_iter=100, verbose=False
+):
+
+    def sys_eqs(coefs):
+        N = len(coefs) - 2  # Note that coefs includes coef_haar, C1 and C2
+        x = HOHWM.collocation(N)
+        t = HOHWM.collocation(N)
+        eqs = np.zeros(N + 2)
+
+        coefs_haar = coefs[:-2]
+        C1 = coefs[-2]
+        C2 = coefs[-1]
+
+        # coef_haar part
+        sigma_LHS = np.zeros(N)
+        sigma_RHS = np.zeros(N)
+        for i in range(N):
+            sigma_LHS += coefs_haar[i] * HOHWM.haar_int_2(x, i + 1)
+        for k in range(N):
+            for i in range(N):
+                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
+            sigma_RHS += K(x, t[k], u)
+        eqs[:-2] = C1 + C2 * x + sigma_LHS - f(x) - 1 / N * sigma_RHS
+
+        # C1 part
+        sigma_C1 = 0
+        for k in range(N):
+            for i in range(N):
+                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
+            sigma_C1 += K(0, t[k], u)
+        eqs[-2] = C1 - (f(0) + 1 / N * sigma_C1)
+
+        # C2 part
+        sigma_LHS = 0
+        sigma_RHS = 0
+        for i in range(N):
+            sigma_LHS += coefs_haar[i] * HOHWM.haar_int_2(1, i + 1)
+        for k in range(N):
+            for i in range(N):
+                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
+            sigma_RHS += K(1, t[k], u)
+        eqs[-1] = C1 + C2 + sigma_LHS - f(1) - 1 / N * sigma_RHS
+
+        return eqs
+
+    def Jac(coefs):
+        N = len(coefs) - 2
+        x = HOHWM.collocation(N)
+        t = HOHWM.collocation(N)
+        jac = np.zeros((N + 2, N + 2))
+
+        coef_haar = coefs[:-2]
+        C1 = coefs[-2]
+        C2 = coefs[-1]
+
+        # coef_haar part
+        jac[:-2, :-2] = HOHWM.haar_int_2_mat(x, N)
+        jac[-2, :-2] = np.zeros(N)
+        jac[-1, :-2] = np.array([HOHWM.haar_int_2(1, i + 1) for i in range(N)])
+
+        # C1 part
+        jac[:, -2] = np.ones(N + 2)
+
+        x = np.append(x, 0)  # for the last row with C1 equation
+        x = np.append(x, 1)  # for the last row with C2 equation
+
+        # C2 part
+        jac[:, -1] = x
+
+        RHS_f_ai = np.zeros((N + 2, N))  # J[:, :-2]
+        RHS_f_c1 = np.zeros(N + 2)  # J[:, -2]
+        RHS_f_c2 = np.zeros(N + 2)  # J[:, -1]
+
+        for k in range(N):
+            dk_chain2 = np.zeros(N)
+            u = C1 + C2 * t[k]
+            for i in range(N):
+                haar_value = HOHWM.haar_int_2(t[k], i + 1)
+                u += coef_haar[i] * haar_value
+                dk_chain2[i] = haar_value
+            dk_chain1 = dK(x, t[k], u)
+            RHS_f_ai += np.outer(dk_chain1, dk_chain2)  # dK/dai = dK/du * du/dai
+            RHS_f_c1 += dk_chain1
+            RHS_f_c2 += t[k] * dk_chain1
+
+        jac[:, :-2] -= RHS_f_ai / N
+        jac[:, -2] -= RHS_f_c1 / N
+        jac[:, -1] -= RHS_f_c2 / N
+
+        return jac
+
+    def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
+
+        # iter number
+        iter_newton = 0
+        iter_gmres = 0
+
+        for _ in range(max_iter):
+            counter = gmres_counter()
+
+            F = sys_eqs(coefs)
+            # J = Jac(coefs)
+            J = sop.approx_fprime(coefs, sys_eqs)
+            # breakpoint()
+            if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
+                break
+
+            if method == "LU":
+                delta = np.linalg.solve(J, -F)  # LU
+            elif method == "GMRES":
+                delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
+                iter_gmres += counter.niter
+            elif method == "LU_sparse":
+                delta = sla.spsolve(J, -F)
+            else:
+                raise ValueError("method can only be LU, GMRES or LU_sparse")
+
+            coefs += delta
+            iter_newton += 1
+
+        if verbose:
+            print("Newton's method: ", iter_newton, "iterations")
+            if method == "GMRES":
+                print("GMRES: ", iter_gmres, "iterations")
+
+        if iter_newton == max_iter:
+            print("Newton's method does not converge!")
+
+        # for convenience, return the iters_gmres in LU as iter_newton
+        if method == "LU":
+            iter_gmres = iter_newton
+        if method == "LU_sparse":
+            iter_gmres = iter_newton
+        return coefs, iter_newton, iter_gmres
+
+    # get the initial guess
+    coefs_init = np.zeros(N + 2)
+    coefs_init[-2] = f(0)
+    coefs_init[-1] = f(1)
+
+    # solve the system of equations
+    coefs, iter_newton, iter_gmres = newton(
+        coefs=coefs_init, tol=tol, max_iter=max_iter, method=method, verbose=verbose
+    )
+
+    # get the coefficients
+    coef_haar = coefs[:-2]
+    C1 = coefs[-2]
+    C2 = coefs[-1]
+
+    # define approximated function
+    def u_haar_approx_func(x):
+        approx_func_val = C1 + C2 * x
+        for k in range(N):
+            approx_func_val += coef_haar[k] * HOHWM.haar_int_2(x, k + 1)
+        return approx_func_val
+
+    return u_haar_approx_func, iter_newton, iter_gmres
+
+
+# _____________________________________________________________________________
+# _____________________________________________________________________________
+# _____________________________________________________________________________
+# _____________________________________________________________________________
 
 if __name__ == "__main__":
 
@@ -195,7 +363,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Fredholm equation")
 
-    col_size = [2, 4, 8, 16, 32]
+    col_size = [2, 4, 8, 16, 32, 64]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -212,7 +380,7 @@ if __name__ == "__main__":
         file.write("Iterative method for Nonlinear Fredholm equation\n")
         file.write("\n")
 
-    for s in ["1st"]:
+    for s in ["1st", "2nd"]:
         test_x = 0.5  # calculate the error at x = 0.5
         for method in methods:
             for M in col_size:
@@ -229,7 +397,16 @@ if __name__ == "__main__":
                         verbose=False,
                     )
                 elif s == "2nd":
-                    raise NotImplementedError("2nd is not implemented yet")
+                    u_approx_func, _, iter = Fredholm_2nd_iterative_method(
+                        M,
+                        f,
+                        K,
+                        dK,
+                        method=method,
+                        tol=1e-8,
+                        max_iter=500,
+                        verbose=False,
+                    )
                 else:
                     raise ValueError("method can only be 1st or 2nd")
 
