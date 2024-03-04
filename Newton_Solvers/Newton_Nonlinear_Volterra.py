@@ -38,14 +38,13 @@ def Volterra_1st_iterative_method(
 
         # coef_haar part
         for j in range(N):
-            sum_LHS = 0
-            sum_LHS = np.sum(
+            sum_LHS = sum(
                 coef_haar[i] * HOHWM.haar_int_1(x[j], i + 1) for i in range(N)
             )
             sum_u = 0
             sum_K = 0
             for k in range(j + 1):
-                sum_u = np.sum(
+                sum_u = sum(
                     coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1) for i in range(N)
                 )
                 sum_K += K(x[j], t[k], C1 + sum_u)
@@ -132,47 +131,44 @@ def Volterra_2nd_iterative_method(
 ):
 
     def sys_eqs(coefs):
-        N = len(coefs) - 2  # Note that coefs includes coef_haar, C1 and C2
+        N = len(coefs) - 1 # Note that coefs includes coef_haar and C2
         x = HOHWM.collocation(N)
         t = HOHWM.collocation(N)
-        eqs = np.zeros(N + 2)
-
-        coefs_haar = coefs[:-2]
-        C1 = coefs[-2]
+        eqs = np.zeros(N + 1)
+        
+        coefs_haar = coefs[:-1]
+        C1 = f(0)
         C2 = coefs[-1]
-
+        
         # coef_haar part
-        sigma_LHS = np.zeros(N)
-        sigma_RHS = np.zeros(N)
-        for i in range(N):
-            sigma_LHS += coefs_haar[i] * HOHWM.haar_int_2(x, i + 1)
-        for k in range(N):
-            for i in range(N):
-                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
-            sigma_RHS += K(x, t[k], u)
-        eqs[:-2] = C1 + C2 * x + sigma_LHS - f(x) - 1 / N * sigma_RHS
-
-        # C1 part
-        sigma_C1 = 0
-        for k in range(N):
-            for i in range(N):
-                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
-            sigma_C1 += K(0, t[k], u)
-        eqs[-2] = C1 - (f(0) + 1 / N * sigma_C1)
+        for j in range(N):
+            sum_LHS = sum(
+                coefs_haar[i] * HOHWM.haar_int_2(x[j], i + 1) for i in range(N)
+            )
+            sum_u = 0
+            sum_K = 0
+            for k in range(j + 1):
+                sum_u = sum(
+                    coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N)
+                )
+                sum_K += K(x[j], t[k], C1 + C2 * t[k] + sum_u)
+            eqs[j] = C1 + C2 * x[j] + sum_LHS - f(x[j]) - 1 / N * sum_K
 
         # C2 part
-        sigma_LHS = 0
-        sigma_RHS = 0
-        for i in range(N):
-            sigma_LHS += coefs_haar[i] * HOHWM.haar_int_2(1, i + 1)
+        sum_LHS = sum(
+            coefs_haar[i] * HOHWM.haar_int_2(1, i + 1) for i in range(N)
+        )
+        sum_u = 0
+        sum_K = 0
         for k in range(N):
-            for i in range(N):
-                u = C1 + C2 * t[k] + coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1)
-            sigma_RHS += K(1, t[k], u)
-        eqs[-1] = C1 + C2 + sigma_LHS - f(1) - 1 / N * sigma_RHS
-
+            sum_u = sum(
+                coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N)
+            )
+            sum_K += K(1, t[k], C1 + C2 * t[k] + sum_u)
+        eqs[-1] = C1 + C2 * 1 + sum_LHS - f(1) - 1 / N * sum_K
+        
         return eqs
-
+        
     def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
 
         # iter number
@@ -218,8 +214,7 @@ def Volterra_2nd_iterative_method(
         return coefs, iter_newton, iter_gmres
 
     # get the initial guess
-    coefs_init = np.zeros(N + 2)
-    coefs_init[-2] = f(0)
+    coefs_init = np.zeros(N + 1)
     coefs_init[-1] = f(1)
 
     # solve the system of equations
@@ -228,8 +223,8 @@ def Volterra_2nd_iterative_method(
     )
 
     # get the coefficients
-    coef_haar = coefs[:-2]
-    C1 = coefs[-2]
+    coef_haar = coefs[:-1]
+    C1 = f(0)
     C2 = coefs[-1]
 
     # define approximated function
@@ -250,7 +245,7 @@ def Volterra_2nd_iterative_method(
 if __name__ == "__main__":
 
     f = lambda x: np.exp(x) - x * np.exp(-x)
-    K = lambda x, t, u: np.exp(-x - 2 * t) * u**2
+    K = lambda x, t, u: np.exp(-x - 2 * t) * (u ** 2)
     u_true = lambda x: np.exp(x)
 
     K = sp.symbols("K")
@@ -258,7 +253,7 @@ if __name__ == "__main__":
     t = sp.symbols("t")
     u = sp.symbols("u")
 
-    K = sp.exp(-x - 2 * t) * u**2
+    K = sp.exp(-x - 2 * t) * (u ** 2)
 
     # take the derivative of K with respect to u
     dK = sp.diff(K, u)
@@ -272,7 +267,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16, 32, 64]
+    col_size = [2, 4, 8, 16]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -289,7 +284,7 @@ if __name__ == "__main__":
         file.write("Iterative method for Nonlinear Volterra equation\n")
         file.write("\n")
 
-    for s in ["1st"]:
+    for s in ["2nd"]:
         test_x = 0.5  # calculate the error at x = 0.5
         for method in methods:
             for M in col_size:
@@ -301,7 +296,7 @@ if __name__ == "__main__":
                         K,
                         dK,
                         method=method,
-                        tol=1e-8,
+                        tol=1e-5,
                         max_iter=500,
                         verbose=False,
                     )
@@ -312,7 +307,7 @@ if __name__ == "__main__":
                         K,
                         dK,
                         method=method,
-                        tol=1e-8,
+                        tol=1e-5,
                         max_iter=500,
                         verbose=False,
                     )
@@ -321,18 +316,15 @@ if __name__ == "__main__":
 
                 # end time
                 time_end = time.time()
-
-                x = np.linspace(0, 1, 101)
+                
                 u_true_half = u_true(test_x)
                 u_haar_approx_half = u_approx_func(test_x)
                 # store the error
                 err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
-                # compute the global error with zero-norm
-                u_true_vec = u_true(x)
-                u_haar_approx_vec = u_approx_func(x)
 
+                # store the iteration number
                 iters[col_size.index(M)] = iter
-
+                
                 # store the time
                 times[col_size.index(M)] = time_end - time_start
 
