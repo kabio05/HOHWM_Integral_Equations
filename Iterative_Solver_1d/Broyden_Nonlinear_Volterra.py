@@ -298,7 +298,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16]
+    col_size = [2, 4, 8, 16, 32, 64]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -327,7 +327,7 @@ if __name__ == "__main__":
                         K,
                         dK,
                         method=method,
-                        tol=1e-8,
+                        tol=1e-5,
                         max_iter=500,
                         verbose=False,
                     )
@@ -338,7 +338,7 @@ if __name__ == "__main__":
                         K,
                         dK,
                         method=method,
-                        tol=1e-8,
+                        tol=1e-5,
                         max_iter=500,
                         verbose=False,
                     )
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 
                 # store the time
                 times[col_size.index(M)] = time_end - time_start
-
+                
             # store the error
             error_data[:, methods.index(method)] = err_local
 

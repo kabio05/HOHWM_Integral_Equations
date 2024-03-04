@@ -284,7 +284,7 @@ if __name__ == "__main__":
         file.write("Iterative method for Nonlinear Volterra equation\n")
         file.write("\n")
 
-    for s in ["2nd"]:
+    for s in ["1st", "2nd"]:
         test_x = 0.5  # calculate the error at x = 0.5
         for method in methods:
             for M in col_size:
@@ -322,14 +322,20 @@ if __name__ == "__main__":
                 # store the error
                 err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
 
+                # calcualte the global error
+                u_true_all = u_true(np.linspace(0, 1, 1000))
+                u_haar_approx_all = u_approx_func(np.linspace(0, 1, 1000))
+                err_global[col_size.index(M)] = np.linalg.norm(u_true_all - u_haar_approx_all) / np.sqrt(1000)
+                
                 # store the iteration number
                 iters[col_size.index(M)] = iter
                 
                 # store the time
                 times[col_size.index(M)] = time_end - time_start
-
+            
             # store the error
-            error_data[:, methods.index(method)] = err_local
+            error_data[:, methods.index(method)] = err_local 
+            # error_data[:, methods.index(method)] = err_global
 
             # calculate the experimental rate of convergence
             ERC = np.diff(np.log(err_local)) / np.log(2)
