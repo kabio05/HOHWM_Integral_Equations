@@ -7,6 +7,8 @@ import time
 import HOHWM
 import scipy.optimize as sop
 
+# flake8: noqa
+
 
 # For storing the iteration number of GMRES
 class gmres_counter(object):
@@ -21,13 +23,41 @@ class gmres_counter(object):
             pass
 
 
-# flake8: noqa
-
-
 def Volterra_1st_iterative_method(
-    N, f, K, dK, method="GMRES", tol=1e-8, max_iter=100, verbose=False
+    N, f, K, method="GMRES", tol=1e-8, max_iter=100, verbose=False
 ):
+    """
+    Iterative method for Nonlinear Volterra equation with first order HOHWM, using newton's
+    method to solve the system of nonlinear equations.
+
+    Args:
+        N (int): number of collocation points
+        f (callable function): function f(x) in u(x) = f(x) + int_0^x K(x,t,u(t))dt
+        K (callable function): kernel function K(x,t,u)
+        method (str, optional): method for solving the linear system. Defaults to "GMRES".
+        tol (float, optional): the tolerance for stopping criteria of newton's method. Defaults to 1e-8.
+        max_iter (int, optional): the maximum number of iterations for newton's method. Defaults to 100.
+        verbose (bool, optional): whether to print the iteration number of newton's
+        method and GMRES method. Defaults to False.
+
+    Returns:
+        u_haar_approx_func (callable function): the approximated function u_approx(x)
+        iter_newton (int): the iteration number of newton's method
+        iter_gmres (int): the iteration number of GMRES method
+    """
+
     def sys_eqs(coefs):
+        """
+        The system of nonlinear equations of the first order HOHWM on nonlinear Volterra equation.
+        Check the page 10, equation (56) for the details.
+
+        Args:
+            coefs (numpy array): coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+
+        Returns:
+            sys (numpy array): the system of nonlinear equations
+        """
+
         N = len(coefs)
         x = HOHWM.collocation(N)
         t = HOHWM.collocation(N)
@@ -37,23 +67,47 @@ def Volterra_1st_iterative_method(
         C1 = f(0)
 
         # coef_haar part
+
+        # loop over the x_j, j = 1, 2, ..., N
         for j in range(N):
+            sum_LHS = 0
             sum_LHS = sum(
                 coef_haar[i] * HOHWM.haar_int_1(x[j], i + 1) for i in range(N)
-            )
+            )  # this is the sum of the Haar wavelet functions \sum_a_i * \p_i(x_j)
+
+            # initialize the sum_u and sum_K to avoid the error
             sum_u = 0
             sum_K = 0
-            for k in range(j + 1):
+
+            for k in range(
+                j + 1
+            ):  # note that the sum is from 0 to j, hence the range is (j+1)
                 sum_u = sum(
                     coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1) for i in range(N)
-                )
-                sum_K += K(x[j], t[k], C1 + sum_u)
+                )  # this is the sum of the Haar wavelet functions within t_k, \sum_a_i * \p_i(t_k)
+                sum_K += K(
+                    x[j], t[k], C1 + sum_u
+                )  # this is the sum of the kernel function K(x_j, t_k, u(t_k))
             eqs[j] = C1 + sum_LHS - f(x[j]) - 1 / N * sum_K
         return eqs
 
     def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
+        """
+        Worked newton's method, which has proved to be correct in the previous iterative method
 
-        # iter number
+        Args:
+            coefs (numpy array): coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+            tol (float, optional): the tolerance for stopping criteria of newton's method. Defaults to tol.
+            max_iter (int, optional): the maximum number of iterations for newton's method. Defaults to max_iter.
+            method (str, optional): method for solving the linear system. Defaults to method.
+            verbose (bool, optional): whether to print the iteration number of newton's method and GMRES method. Defaults to verbose.
+
+        Returns:
+            coefs (numpy array): updated coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+            iter_newton (int): the iteration number of newton's method
+            iter_gmres (int): the iteration number of GMRES method
+        """
+        # iter number of newton's method and GMRES method
         iter_newton = 0
         iter_gmres = 0
 
@@ -61,14 +115,18 @@ def Volterra_1st_iterative_method(
             counter = gmres_counter()
 
             F = sys_eqs(coefs)
-            J = sop.approx_fprime(coefs, sys_eqs)
-            # breakpoint()
-            if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:
+            J = sop.approx_fprime(
+                coefs, sys_eqs
+            )  # we use this to approximate the Jacobian matrix
+
+            if np.linalg.norm(F) < tol or np.linalg.norm(J) < tol:  # stopping criteria
                 break
 
+            # use different method to solve the linear system
             if method == "LU":
                 delta = np.linalg.solve(J, -F)  # LU
             elif method == "GMRES":
+                # here we use restart = len(F) to avoid the bad performance of GMRES
                 delta = sla.gmres(J, -F, restart=len(F), callback=counter)[0]
                 iter_gmres += counter.niter
             elif method == "LU_sparse":
@@ -76,6 +134,7 @@ def Volterra_1st_iterative_method(
             else:
                 raise ValueError("method can only be LU, GMRES or LU_sparse")
 
+            # update the coefficients
             coefs += delta
             iter_newton += 1
 
@@ -88,6 +147,7 @@ def Volterra_1st_iterative_method(
             print("Newton's method does not converge!")
 
         # for convenience, return the iters_gmres in LU as iter_newton
+        # it helps to make the table in below comparison
         if method == "LU":
             iter_gmres = iter_newton
         if method == "LU_sparse":
@@ -117,7 +177,6 @@ def Volterra_1st_iterative_method(
     return u_haar_approx_func, iter_newton, iter_gmres
 
 
-
 # _____________________________________________________________________________
 # _____________________________________________________________________________
 # _____________________________________________________________________________
@@ -127,21 +186,54 @@ def Volterra_1st_iterative_method(
 
 
 def Volterra_2nd_iterative_method(
-    N, f, K, dK, method="GMRES", tol=1e-8, max_iter=100, verbose=False
+    N, f, K, method="GMRES", tol=1e-8, max_iter=100, verbose=False
 ):
+    """
+    Iterative method for Nonlinear Volterra equation with second order HOHWM, using newton's
+    method to solve the system of nonlinear equations.
+
+    Args:
+        N (int): number of collocation points
+        f (callable function): function f(x) in u(x) = f(x) + int_0^x K(x,t,u(t))dt
+        K (callable function): kernel function K(x,t,u)
+        method (str, optional): method for solving the linear system. Defaults to "GMRES".
+        tol (float, optional): the tolerance for stopping criteria of newton's method. Defaults to 1e-8.
+        max_iter (int, optional): the maximum number of iterations for newton's method. Defaults to 100.
+        verbose (bool, optional): whether to print the iteration number of newton's
+        method and GMRES method. Defaults to False.
+
+    Returns:
+        u_haar_approx_func (callable function): the approximated function u_approx(x)
+        iter_newton (int): the iteration number of newton's method
+        iter_gmres (int): the iteration number of GMRES method
+    """
 
     def sys_eqs(coefs):
-        N = len(coefs) - 1 # Note that coefs includes coef_haar and C2
+        """
+        The system of nonlinear equations of the second order HOHWM on nonlinear Volterra equation.
+        Check the page 10 and 11, equation (57) and (58) for the details.
+
+        Args:
+            coefs (numpy array): coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+            combined with the coefficient C2
+
+        Returns:
+            sys (numpy array): the system of nonlinear equations
+        """
+        N = len(coefs) - 1  # Note that coefs includes coef_haar and C2, hence the length is N+1
         x = HOHWM.collocation(N)
         t = HOHWM.collocation(N)
         eqs = np.zeros(N + 1)
-        
+
+        # get the coefficients
         coefs_haar = coefs[:-1]
         C1 = f(0)
         C2 = coefs[-1]
-        
-        # coef_haar part
+
+        # coef_haar part, this is for the equation (57)
+        # similar to the first order, just some changes in additonal constant C2
         for j in range(N):
+            sum_LHS = 0
             sum_LHS = sum(
                 coefs_haar[i] * HOHWM.haar_int_2(x[j], i + 1) for i in range(N)
             )
@@ -154,23 +246,36 @@ def Volterra_2nd_iterative_method(
                 sum_K += K(x[j], t[k], C1 + C2 * t[k] + sum_u)
             eqs[j] = C1 + C2 * x[j] + sum_LHS - f(x[j]) - 1 / N * sum_K
 
-        # C2 part
-        sum_LHS = sum(
-            coefs_haar[i] * HOHWM.haar_int_2(1, i + 1) for i in range(N)
-        )
+        # C2 part, this is for the equation (58)
+        # similar to the coef_haar part, just set x = 1
+        sum_LHS = 0
+        sum_LHS = sum(coefs_haar[i] * HOHWM.haar_int_2(1, i + 1) for i in range(N))
         sum_u = 0
         sum_K = 0
         for k in range(N):
-            sum_u = sum(
-                coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N)
-            )
+            sum_u = sum(coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N))
             sum_K += K(1, t[k], C1 + C2 * t[k] + sum_u)
         eqs[-1] = C1 + C2 * 1 + sum_LHS - f(1) - 1 / N * sum_K
-        
-        return eqs
-        
-    def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
 
+        return eqs
+
+    def newton(coefs, tol=tol, max_iter=max_iter, method=method, verbose=verbose):
+        """
+        Worked newton's method, which has proved to be correct in the previous iterative method
+        Same as the above one, but the system of equations is different
+
+        Args:
+            coefs (numpy array): coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+            tol (float, optional): the tolerance for stopping criteria of newton's method. Defaults to tol.
+            max_iter (int, optional): the maximum number of iterations for newton's method. Defaults to max_iter.
+            method (str, optional): method for solving the linear system. Defaults to method.
+            verbose (bool, optional): whether to print the iteration number of newton's method and GMRES method. Defaults to verbose.
+
+        Returns:
+            coefs (numpy array): updated coefficients of the Haar wavelet functions a_1, a_2, ..., a_N
+            iter_newton (int): the iteration number of newton's method
+            iter_gmres (int): the iteration number of GMRES method
+        """
         # iter number
         iter_newton = 0
         iter_gmres = 0
@@ -244,23 +349,10 @@ def Volterra_2nd_iterative_method(
 
 if __name__ == "__main__":
 
+    # the same test function as test 6 in the paper, page 14, equation (68)
     f = lambda x: np.exp(x) - x * np.exp(-x)
-    K = lambda x, t, u: np.exp(-x - 2 * t) * (u ** 2)
+    K = lambda x, t, u: np.exp(-x - 2 * t) * (u**2)
     u_true = lambda x: np.exp(x)
-
-    K = sp.symbols("K")
-    x = sp.symbols("x")
-    t = sp.symbols("t")
-    u = sp.symbols("u")
-
-    K = sp.exp(-x - 2 * t) * (u ** 2)
-
-    # take the derivative of K with respect to u
-    dK = sp.diff(K, u)
-
-    # lambdify the derivative of K with respect to u
-    K = sp.lambdify((x, t, u), K, "numpy")
-    dK = sp.lambdify((x, t, u), dK, "numpy")
 
     # Compute the error
     print_results = True
@@ -294,7 +386,6 @@ if __name__ == "__main__":
                         M,
                         f,
                         K,
-                        dK,
                         method=method,
                         tol=1e-5,
                         max_iter=500,
@@ -305,7 +396,6 @@ if __name__ == "__main__":
                         M,
                         f,
                         K,
-                        dK,
                         method=method,
                         tol=1e-5,
                         max_iter=500,
@@ -316,25 +406,29 @@ if __name__ == "__main__":
 
                 # end time
                 time_end = time.time()
-                
+
+                # calculate the local error
                 u_true_half = u_true(test_x)
                 u_haar_approx_half = u_approx_func(test_x)
+                
                 # store the error
                 err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
 
-                # calcualte the global error
-                u_true_all = u_true(np.linspace(0, 1, 1000))
-                u_haar_approx_all = u_approx_func(np.linspace(0, 1, 1000))
-                err_global[col_size.index(M)] = np.linalg.norm(u_true_all - u_haar_approx_all) / np.sqrt(1000)
-                
+                # calcualte the global error (not essential)
+                # u_true_all = u_true(np.linspace(0, 1, 1000))
+                # u_haar_approx_all = u_approx_func(np.linspace(0, 1, 1000))
+                # err_global[col_size.index(M)] = np.linalg.norm(
+                #     u_true_all - u_haar_approx_all
+                # ) / np.sqrt(1000)
+
                 # store the iteration number
                 iters[col_size.index(M)] = iter
-                
+
                 # store the time
                 times[col_size.index(M)] = time_end - time_start
-            
+
             # store the error
-            error_data[:, methods.index(method)] = err_local 
+            error_data[:, methods.index(method)] = err_local
             # error_data[:, methods.index(method)] = err_global
 
             # calculate the experimental rate of convergence
