@@ -80,7 +80,7 @@ def Volterra_1st_iterative_method(
             sum_K = 0
 
             for k in range(
-                j + 1
+                j
             ):  # note that the sum is from 0 to j, hence the range is (j+1)
                 sum_u = sum(
                     coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1) for i in range(N)
@@ -239,7 +239,7 @@ def Volterra_2nd_iterative_method(
             )
             sum_u = 0
             sum_K = 0
-            for k in range(j + 1):
+            for k in range(j):
                 sum_u = sum(
                     coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N)
                 )
@@ -359,7 +359,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16]
+    col_size = [2, 4, 8, 16, 32]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
