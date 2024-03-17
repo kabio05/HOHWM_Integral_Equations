@@ -243,22 +243,23 @@ if __name__ == "__main__":
     Phi = lambda u: u**3
     u_true = lambda s, t: np.sin(t)
 
-    M = 8
-
-    u_approx_func, _, iter = Fredholm_2d(
-        M,
-        f,
-        K,
-        Phi,
-        method="LU",
-        tol=1e-5,
-        max_iter=500,
-        verbose=False,
-    )
-    
     plot = False
     
-    if plot == True:
+    if plot == True: # have a visual check
+    
+        M = 8
+
+        u_approx_func, _, iter = Fredholm_2d(
+            M,
+            f,
+            K,
+            Phi,
+            method="LU",
+            tol=1e-5,
+            max_iter=500,
+            verbose=False,
+        )
+
         # plot the approximated solution and the true solution
         x = np.linspace(0, 1, 10)
         y = np.linspace(0, 1, 10)
@@ -278,3 +279,124 @@ if __name__ == "__main__":
         ax.plot_surface(X, Y, u_true_val, cmap="viridis")
 
         plt.show()
+
+    # test the convergence rate
+    
+    # Compute the error
+    print_results = True
+    if print_results is True:
+        print("Iterative method for 2D Nonlinear Fredholm equation")
+
+    col_size = [2, 4, 8, 16, 32, 64]
+    err_local = np.zeros(len(col_size))
+    err_global = np.zeros(len(col_size))
+    iters = np.zeros(len(col_size))
+    times = np.zeros(len(col_size))
+    methods = ["LU", "GMRES", "LU_sparse"]
+
+    error_data = np.zeros((len(col_size), len(methods)))
+    ERC_data = np.zeros((len(col_size) - 1, len(methods)))
+    iter_data = np.zeros((len(col_size), len(methods)))
+    time_data = np.zeros((len(col_size), len(methods)))
+
+    # open a txt file to store the results
+    with open("2D_Nonlinear_Fredholm.txt", "w") as file:
+        file.write("Iterative method for 2D Nonlinear Fredholm equation\n")
+        file.write("\n")
+
+    test_x = [0.5, 0.5] # test point
+    for method in methods:
+        for M in col_size:
+            time_start = time.time()
+            u_approx_func, iter, _ = Fredholm_2d(
+                M,
+                f,
+                K,
+                Phi,
+                method=method,
+                tol=1e-5,
+                max_iter=500,
+                verbose=False,
+            )
+            # end time
+            time_end = time.time()
+
+            x = np.linspace(0, 1, 101)
+            u_true_half = u_true(test_x[0], test_x[1])
+            u_haar_approx_half = u_approx_func(test_x)
+            # store the error
+            err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
+
+            iters[col_size.index(M)] = iter
+
+            # store the time
+            times[col_size.index(M)] = time_end - time_start
+
+        # store the error
+        error_data[:, methods.index(method)] = err_local
+
+        # calculate the experimental rate of convergence
+        ERC = np.diff(np.log(err_local)) / np.log(2)
+        ERC_data[:, methods.index(method)] = ERC
+
+        # store the iteration number
+        iter_data[:, methods.index(method)] = iters
+
+        # store the time
+        time_data[:, methods.index(method)] = times
+
+    # convert to pandas dataframe
+    df_error = pd.DataFrame(error_data, columns=methods)
+    df_error.index = col_size
+
+    df_ERC = pd.DataFrame(ERC_data, columns=methods)
+    df_ERC.index = col_size[1:]
+
+    df_iter = pd.DataFrame(iter_data, columns=methods)
+    df_iter.index = col_size
+
+    df_time = pd.DataFrame(time_data, columns=methods)
+    df_time.index = col_size
+
+    # write the results to txt file
+    with open("2D_Nonlinear_Fredholm.txt", "a") as file:
+        file.write("Error at x = {}\n".format(test_x))
+        file.write(str(df_error))
+        file.write("\n")
+        file.write("\n")
+
+        file.write("Experimental rate of convergence\n")
+        file.write(str(df_ERC))
+        file.write("\n")
+        file.write("\n")
+
+        file.write("Iteration number\n")
+        file.write(str(df_iter))
+        file.write("\n")
+        file.write("\n")
+
+        file.write("Time\n")
+        file.write(str(df_time))
+        file.write("\n")
+        file.write("\n")
+
+    if print_results is True:
+        print("Error at x = {}".format(test_x))
+
+        print(df_error)
+        print("\n")
+
+        print("Experimental rate of convergence")
+
+        print(df_ERC)
+        print("\n")
+
+        print("Iteration number")
+
+        print(df_iter)
+        print("\n")
+
+        print("Time")
+
+        print(df_time)
+        print("\n")
