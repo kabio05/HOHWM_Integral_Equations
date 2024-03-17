@@ -45,8 +45,6 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             for j in range(N):
                 coefs_M_b[i, j] = coefs_b[i * N + j]
 
-        # first N ** 2 equations, which are u(x, y)
-
         # to avoid repeated calculation, we introduce
         # some temporary variables
         sum_M_B = np.zeros((N, N))
@@ -71,7 +69,17 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
         M_E = HOHWM.haar_int_1_mat(y, N)  # matrix
         sum_M_E = np.dot(M_E, coefs_e)  # 1 * N vector
 
-        # calculate u_approx
+        # breakpoint()
+
+        # calculate u_approx_0_y
+        u_approx_0_y = np.zeros(N)
+        u_approx_0_y = sum_M_E + coefs_const
+
+        # calculate u_approx_x_0
+        u_approx_x_0 = np.zeros(N)
+        u_approx_x_0 = sum_M_D + coefs_const
+
+        # calculate u_approx_x_y
         u_approx_x_y = np.zeros((N, N))
         # extend sum_M_D to a matrix
         sum_M_D = np.outer(sum_M_D, np.ones(N))
@@ -80,19 +88,14 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
         # note coefs_const are added to each element
         u_approx_x_y = sum_M_B + sum_M_D + sum_M_E + coefs_const
 
+        # calculate u_approx_0_0
+        u_approx_0_0 = coefs_const
+
+        # first N ** 2 equations, which are u(x, y)
         for m in range(N):
             for n in range(N):
                 u_x_m_y_n = 0
-                for i in range(N):
-                    for j in range(N):
-                        u_x_m_y_n += (
-                            coefs_b[i * N + j]
-                            * HOHWM.haar_int_1(x[m], i + 1)
-                            * HOHWM.haar_int_1(y[n], j + 1)
-                        )
-                        u_x_m_y_n += coefs_e[j] * HOHWM.haar_int_1(y[n], j + 1)
-                    u_x_m_y_n += coefs_d[i] * HOHWM.haar_int_1(x[m], i + 1)
-                u_x_m_y_n += coefs_const
+                u_x_m_y_n = u_approx_x_y[m, n]
 
                 f_val = f(x[m], y[n])
 
@@ -100,16 +103,9 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
                 for p in range(N):
                     for q in range(N):
                         u_s_p_t_q = 0
-                        for i in range(N):
-                            for j in range(N):
-                                u_s_p_t_q += (
-                                    coefs_b[i * N + j]
-                                    * HOHWM.haar_int_1(s[p], i + 1)
-                                    * HOHWM.haar_int_1(t[q], j + 1)
-                                )
-                                u_s_p_t_q += coefs_e[j] * HOHWM.haar_int_1(t[q], j + 1)
-                            u_s_p_t_q += coefs_d[i] * HOHWM.haar_int_1(s[p], i + 1)
-                        u_s_p_t_q += coefs_const
+                        # we can do this is because the collocation points
+                        # are the same for x, y and s, t
+                        u_s_p_t_q = u_approx_x_y[p, q]
                         K_val += K(x[m], y[n], s[p], t[q]) * Phi(u_s_p_t_q)
                 K_val = K_val / N**2
 
@@ -118,9 +114,7 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
         # N ** 2 to N ** 2 + N eqs, which are u(0, y)
         for n in range(N):
             u_0_y_n = 0
-            for j in range(N):
-                u_0_y_n += coefs_e[j] * HOHWM.haar_int_1(y[n], j + 1)
-            u_0_y_n += coefs_const
+            u_0_y_n = u_approx_0_y[n]
 
             f_val = f(0, y[n])
 
@@ -128,26 +122,15 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             for p in range(N):
                 for q in range(N):
                     u_s_p_t_q = 0
-                    for i in range(N):
-                        for j in range(N):
-                            u_s_p_t_q += (
-                                coefs_b[i * N + j]
-                                * HOHWM.haar_int_1(s[p], i + 1)
-                                * HOHWM.haar_int_1(t[q], j + 1)
-                            )
-                            u_s_p_t_q += coefs_e[j] * HOHWM.haar_int_1(t[q], j + 1)
-                        u_s_p_t_q += coefs_d[i] * HOHWM.haar_int_1(s[p], i + 1)
-                    u_s_p_t_q += coefs_const
-                    K_val += K(0, y[n], s[p], t[q]) * Phi(u_s_p_t_q)
+                    u_s_p_t_q = u_approx_x_y[p, q]
             K_val = K_val / N**2
+            # breakpoint()
             eqs[N**2 + n] = u_0_y_n - f_val - K_val
 
         # N ** 2 + N to N ** 2 + 2N eqs, which are u(x, 0)
         for m in range(N):
-            u_x_0_n = 0
-            for i in range(N):
-                u_x_0_n += coefs_d[i] * HOHWM.haar_int_1(x[m], i + 1)
-            u_x_0_n += coefs_const
+            u_x_0_m = 0
+            u_x_0_m = u_approx_x_0[m]
 
             f_val = f(x[m], 0)
 
@@ -155,20 +138,10 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             for p in range(N):
                 for q in range(N):
                     u_s_p_t_q = 0
-                    for i in range(N):
-                        for j in range(N):
-                            u_s_p_t_q += (
-                                coefs_b[i * N + j]
-                                * HOHWM.haar_int_1(s[p], i + 1)
-                                * HOHWM.haar_int_1(t[q], j + 1)
-                            )
-                            u_s_p_t_q += coefs_e[j] * HOHWM.haar_int_1(t[q], j + 1)
-                        u_s_p_t_q += coefs_d[i] * HOHWM.haar_int_1(s[p], i + 1)
-                    u_s_p_t_q += coefs_const
-                    K_val += K(x[m], 0, s[p], t[q], u_s_p_t_q)
+                    u_s_p_t_q = u_approx_x_y[p, q]
+                    K_val += K(x[m], 0, s[p], t[q]) * Phi(u_s_p_t_q)
             K_val = K_val / N**2
-            eqs[N**2 + N + m] = u_x_0_n - f_val - K_val
-            # print(eqs[N**2 + N: N**2 + 2*N])
+            eqs[N**2 + N + m] = u_x_0_m - f_val - K_val
 
         # N ** 2 + 2N + 1 eq, which is u(0, 0)
         u_0_0 = coefs_const
@@ -177,17 +150,8 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
         for p in range(N):
             for q in range(N):
                 u_s_p_t_q = 0
-                for i in range(N):
-                    for j in range(N):
-                        u_s_p_t_q += (
-                            coefs_b[i * N + j]
-                            * HOHWM.haar_int_1(s[p], i + 1)
-                            * HOHWM.haar_int_1(t[q], j + 1)
-                        )
-                        u_s_p_t_q += coefs_e[j] * HOHWM.haar_int_1(t[q], j + 1)
-                    u_s_p_t_q += coefs_d[i] * HOHWM.haar_int_1(s[p], i + 1)
-                u_s_p_t_q += coefs_const
-                K_val += K(0, 0, s[p], t[q], u_s_p_t_q)
+                u_s_p_t_q = u_approx_x_y[p, q]
+                K_val += K(0, 0, s[p], t[q]) * Phi(u_s_p_t_q)
         K_val = K_val / N**2
         eqs[-1] = u_0_0 - f_val - K_val
 
@@ -261,6 +225,10 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
                 u_haar_approx += coefs_e[j] * HOHWM.haar_int_1(x[1], j + 1)
             u_haar_approx += coefs_d[i] * HOHWM.haar_int_1(x[0], i + 1)
         u_haar_approx += coefs_const
+
+        # DISCUSS: why we need this fraction?
+        u_haar_approx = u_haar_approx / N
+
         return u_haar_approx
 
     return u_haar_approx_func, iter_newton, iter_gmres
@@ -271,17 +239,42 @@ if __name__ == "__main__":
     f = lambda s, t: np.sin(t) - 1 / 18 * s * t**2 * (
         1 - np.cos(1) * (1 / 2 * np.sin(1) ** 2 + 1)
     )
-    K = lambda s, t, x, y, u: 1 / 6 * x * s * t**2 * u**3
+    K = lambda s, t, x, y: 1 / 6 * x * s * t**2
+    Phi = lambda u: u**3
     u_true = lambda s, t: np.sin(t)
 
-    M = 2
+    M = 8
 
     u_approx_func, _, iter = Fredholm_2d(
         M,
         f,
         K,
+        Phi,
         method="LU",
         tol=1e-5,
         max_iter=500,
         verbose=False,
     )
+    
+    plot = False
+    
+    if plot == True:
+        # plot the approximated solution and the true solution
+        x = np.linspace(0, 1, 10)
+        y = np.linspace(0, 1, 10)
+        X, Y = np.meshgrid(x, y)
+        Z = np.zeros_like(X)
+        for i in range(10):
+            for j in range(10):
+                Z[i, j] = u_approx_func([X[i, j], Y[i, j]])
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot_surface(X, Y, Z, cmap="viridis")
+
+        u_true_val = np.zeros_like(X)
+        for i in range(10):
+            for j in range(10):
+                u_true_val[i, j] = u_true(X[i, j], Y[i, j])
+        ax.plot_surface(X, Y, u_true_val, cmap="viridis")
+
+        plt.show()
