@@ -24,7 +24,7 @@ class gmres_counter(object):
 
 
 def Volterra_1st_iterative_method(
-    N, f, K, method="GMRES", tol=1e-8, max_iter=100, verbose=False
+    N, f, K, Phi, method="GMRES", tol=1e-8, max_iter=100, verbose=False
 ):
     """
     Iterative method for Nonlinear Volterra equation with first order HOHWM, using newton's
@@ -66,28 +66,26 @@ def Volterra_1st_iterative_method(
         coef_haar = coefs.copy()
         C1 = f(0)
 
+        M_A = np.zeros((N, N))
+        M_A = HOHWM.haar_int_1_mat(x, N)
+        sum_M_A = np.dot(M_A, coef_haar)
+
         # coef_haar part
 
         # loop over the x_j, j = 1, 2, ..., N
         for j in range(N):
             sum_LHS = 0
-            sum_LHS = sum(
-                coef_haar[i] * HOHWM.haar_int_1(x[j], i + 1) for i in range(N)
-            )  # this is the sum of the Haar wavelet functions \sum_a_i * \p_i(x_j)
+            # this is the sum of the Haar wavelet functions \sum_a_i * \p_i(x_j)
+            sum_LHS = sum_M_A[j]
 
             # initialize the sum_u and sum_K to avoid the error
             sum_u = 0
             sum_K = 0
 
-            for k in range(
-                j
-            ):  # note that the sum is from 0 to j, hence the range is (j+1)
-                sum_u = sum(
-                    coef_haar[i] * HOHWM.haar_int_1(t[k], i + 1) for i in range(N)
-                )  # this is the sum of the Haar wavelet functions within t_k, \sum_a_i * \p_i(t_k)
-                sum_K += K(
-                    x[j], t[k], C1 + sum_u
-                )  # this is the sum of the kernel function K(x_j, t_k, u(t_k))
+            for k in range(j): # loop over 0, 1, ..., j-1
+                sum_u = sum_M_A[k]
+                # we can do this is because x and t are the same in the collocation points
+                sum_K += K(x[j], t[k]) * Phi(C1 + sum_u)
             eqs[j] = C1 + sum_LHS - f(x[j]) - 1 / N * sum_K
         return eqs
 
@@ -186,7 +184,7 @@ def Volterra_1st_iterative_method(
 
 
 def Volterra_2nd_iterative_method(
-    N, f, K, method="GMRES", tol=1e-8, max_iter=100, verbose=False
+    N, f, K, Phi, method="GMRES", tol=1e-8, max_iter=100, verbose=False
 ):
     """
     Iterative method for Nonlinear Volterra equation with second order HOHWM, using newton's
@@ -220,7 +218,9 @@ def Volterra_2nd_iterative_method(
         Returns:
             sys (numpy array): the system of nonlinear equations
         """
-        N = len(coefs) - 1  # Note that coefs includes coef_haar and C2, hence the length is N+1
+        N = (
+            len(coefs) - 1
+        )  # Note that coefs includes coef_haar and C2, hence the length is N+1
         x = HOHWM.collocation(N)
         t = HOHWM.collocation(N)
         eqs = np.zeros(N + 1)
@@ -230,20 +230,20 @@ def Volterra_2nd_iterative_method(
         C1 = f(0)
         C2 = coefs[-1]
 
+        M_A = np.zeros((N, N))
+        M_A = HOHWM.haar_int_2_mat(x, N)
+        sum_M_A = np.dot(M_A, coefs_haar)
+
         # coef_haar part, this is for the equation (57)
         # similar to the first order, just some changes in additonal constant C2
         for j in range(N):
             sum_LHS = 0
-            sum_LHS = sum(
-                coefs_haar[i] * HOHWM.haar_int_2(x[j], i + 1) for i in range(N)
-            )
+            sum_LHS = sum_M_A[j]
             sum_u = 0
             sum_K = 0
             for k in range(j):
-                sum_u = sum(
-                    coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N)
-                )
-                sum_K += K(x[j], t[k], C1 + C2 * t[k] + sum_u)
+                sum_u = sum_M_A[k]
+                sum_K += K(x[j], t[k]) * Phi(C1 + C2 * t[k] + sum_u)
             eqs[j] = C1 + C2 * x[j] + sum_LHS - f(x[j]) - 1 / N * sum_K
 
         # C2 part, this is for the equation (58)
@@ -254,7 +254,7 @@ def Volterra_2nd_iterative_method(
         sum_K = 0
         for k in range(N):
             sum_u = sum(coefs_haar[i] * HOHWM.haar_int_2(t[k], i + 1) for i in range(N))
-            sum_K += K(1, t[k], C1 + C2 * t[k] + sum_u)
+            sum_K += K(1, t[k]) * Phi(C1 + C2 * t[k] + sum_u)
         eqs[-1] = C1 + C2 * 1 + sum_LHS - f(1) - 1 / N * sum_K
 
         return eqs
@@ -351,7 +351,8 @@ if __name__ == "__main__":
 
     # the same test function as test 6 in the paper, page 14, equation (68)
     f = lambda x: np.exp(x) - x * np.exp(-x)
-    K = lambda x, t, u: np.exp(-x - 2 * t) * (u**2)
+    K = lambda x, t: np.exp(-x - 2 * t)
+    Phi = lambda u: u**2
     u_true = lambda x: np.exp(x)
 
     # Compute the error
@@ -359,7 +360,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16, 32]
+    col_size = [2, 4, 8, 16, 32, 64, 128]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -386,6 +387,7 @@ if __name__ == "__main__":
                         M,
                         f,
                         K,
+                        Phi,
                         method=method,
                         tol=1e-5,
                         max_iter=500,
@@ -396,6 +398,7 @@ if __name__ == "__main__":
                         M,
                         f,
                         K,
+                        Phi,
                         method=method,
                         tol=1e-5,
                         max_iter=500,
@@ -410,7 +413,7 @@ if __name__ == "__main__":
                 # calculate the local error
                 u_true_half = u_true(test_x)
                 u_haar_approx_half = u_approx_func(test_x)
-                
+
                 # store the error
                 err_local[col_size.index(M)] = abs(u_true_half - u_haar_approx_half)
 
