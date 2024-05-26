@@ -303,7 +303,7 @@ if __name__ == "__main__":
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
     times = np.zeros(len(col_size))
-    methods = ["LU", "GMRES", "LU_sparse"]
+    methods = ["LU", "GMRES"]
 
     error_data = np.zeros((len(col_size), len(methods)))
     ERC_data = np.zeros((len(col_size) - 1, len(methods)))

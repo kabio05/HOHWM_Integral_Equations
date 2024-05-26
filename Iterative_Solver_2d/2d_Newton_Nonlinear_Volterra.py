@@ -23,7 +23,7 @@ class gmres_counter(object):
             pass
 
 
-def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False):
+def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False):
 
     def sys_eqs(coefs):
         N = np.sqrt(len(coefs)) - 1  # note coefs is N ** 2 + 2N + 1 array
@@ -100,8 +100,8 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
                 f_val = f(x[m], y[n])
 
                 K_val = 0
-                for p in range(N):
-                    for q in range(N):
+                for p in range(m):
+                    for q in range(n):
                         u_s_p_t_q = 0
                         # we can do this is because the collocation points
                         # are the same for x, y and s, t
@@ -119,11 +119,10 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             f_val = f(0, y[n])
 
             K_val = 0
-            for p in range(N):
-                for q in range(N):
-                    u_s_p_t_q = 0
-                    u_s_p_t_q = u_approx_x_y[p, q]
-                    K_val += K(0, y[n], s[p], t[q]) * Phi(u_s_p_t_q)
+            for q in range(N):
+                u_s_p_t_q = 0
+                u_s_p_t_q = u_approx_0_y[q]
+                K_val += K(0, y[n], 0, t[q]) * Phi(u_s_p_t_q)
             K_val = K_val / N**2
             # breakpoint()
             eqs[N**2 + n] = u_0_y_n - f_val - K_val
@@ -137,10 +136,9 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
 
             K_val = 0
             for p in range(N):
-                for q in range(N):
-                    u_s_p_t_q = 0
-                    u_s_p_t_q = u_approx_x_y[p, q]
-                    K_val += K(x[m], 0, s[p], t[q]) * Phi(u_s_p_t_q)
+                u_s_p_t_q = 0
+                u_s_p_t_q = u_approx_x_0[p]
+                K_val += K(x[m], 0, s[p], 0) * Phi(u_s_p_t_q)
             K_val = K_val / N**2
             eqs[N**2 + N + m] = u_x_0_m - f_val - K_val
 
@@ -148,11 +146,9 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
         u_0_0 = coefs_const
         f_val = f(0, 0)
         K_val = 0
-        for p in range(N):
-            for q in range(N):
-                u_s_p_t_q = 0
-                u_s_p_t_q = u_approx_x_y[p, q]
-                K_val += K(0, 0, s[p], t[q]) * Phi(u_s_p_t_q)
+        u_s_p_t_q = 0
+        u_s_p_t_q = coefs_const
+        K_val += K(0, 0, 0, 0) * Phi(coefs_const)
         K_val = K_val / N**2
         eqs[-1] = u_0_0 - f_val - K_val
 
@@ -235,12 +231,10 @@ def Fredholm_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
 
 if __name__ == "__main__":
 
-    f = lambda s, t: np.sin(t) - 1 / 18 * s * t**2 * (
-        1 - np.cos(1) * (1 / 2 * np.sin(1) ** 2 + 1)
-    )
-    K = lambda s, t, x, y: 1 / 6 * x * s * t**2
-    Phi = lambda u: u**3
-    u_true = lambda s, t: np.sin(t)
+    f = lambda x, y: x * np.sin(y) + x**5/4 * (np.cos(y) - 1) - x**2 / 4 * np.sin(y)**2
+    K = lambda s, t, x, y: x * t**2 + np.cos(s)
+    Phi = lambda u: u
+    u_true = lambda x, y: x * np.sin(y)
 
     plot = False
     
@@ -248,7 +242,7 @@ if __name__ == "__main__":
     
         M = 8
 
-        u_approx_func, _, iter = Fredholm_2d(
+        u_approx_func, _, iter = Volterra_2d(
             M,
             f,
             K,
@@ -284,9 +278,9 @@ if __name__ == "__main__":
     # Compute the error
     print_results = True
     if print_results is True:
-        print("Iterative method for 2D Nonlinear Fredholm equation")
+        print("Iterative method for 2D Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16]
+    col_size = [2, 4, 8]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -299,15 +293,15 @@ if __name__ == "__main__":
     time_data = np.zeros((len(col_size), len(methods)))
 
     # open a txt file to store the results
-    with open("2D_Nonlinear_Fredholm.txt", "w") as file:
-        file.write("Iterative method for 2D Nonlinear Fredholm equation\n")
+    with open("2D_Nonlinear_Volterra.txt", "w") as file:
+        file.write("Iterative method for 2D Nonlinear Volterra equation\n")
         file.write("\n")
 
     test_x = [0.5, 0.5] # test point
     for method in methods:
         for M in col_size:
             time_start = time.time()
-            u_approx_func, iter, _ = Fredholm_2d(
+            u_approx_func, iter, _ = Volterra_2d(
                 M,
                 f,
                 K,
@@ -358,7 +352,7 @@ if __name__ == "__main__":
     df_time.index = col_size
 
     # write the results to txt file
-    with open("2D_Nonlinear_Fredholm.txt", "a") as file:
+    with open("2D_Nonlinear_Volterra.txt", "a") as file:
         file.write("Error at x = {}\n".format(test_x))
         file.write(str(df_error))
         file.write("\n")

@@ -360,12 +360,12 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16, 32, 64, 128]
+    col_size = [2, 4, 8, 16, 32, 64]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
     times = np.zeros(len(col_size))
-    methods = ["LU", "GMRES", "LU_sparse"]
+    methods = ["LU", "GMRES"]
 
     error_data = np.zeros((len(col_size), len(methods)))
     ERC_data = np.zeros((len(col_size) - 1, len(methods)))
