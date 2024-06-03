@@ -355,6 +355,25 @@ if __name__ == "__main__":
     Phi = lambda u: u**2
     u_true = lambda x: np.exp(x)
 
+    plot = True
+    
+    if plot is True:
+        # plot the true function and approximate function
+        col_size = 32
+        u_approx_func, _, _ = Volterra_1st_iterative_method(
+            col_size, f, K, Phi, method="GMRES", tol=1e-5, max_iter=500, verbose=False
+        )
+        
+        x = np.linspace(0, 1, 1000)
+        u_true_all = u_true(x)
+        u_haar_approx_all = u_approx_func(x)
+        
+        plt.plot(x, u_true_all, label="True function")
+        plt.plot(x, u_haar_approx_all, label="Approximated function")
+        plt.legend()
+        plt.show()
+
+    
     # Compute the error
     print_results = True
     if print_results is True:
