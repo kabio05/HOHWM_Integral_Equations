@@ -119,11 +119,12 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             f_val = f(0, y[n])
 
             K_val = 0
-            for q in range(N):
-                u_s_p_t_q = 0
-                u_s_p_t_q = u_approx_0_y[q]
-                K_val += K(0, y[n], 0, t[q]) * Phi(u_s_p_t_q)
-            K_val = K_val / N**2
+            # for q in range(n):   # for Volterra, the upper limit is n
+            #     u_s_p_t_q = 0
+            #     u_s_p_t_q = u_approx_0_y[q]
+            #     K_val += K(0, y[n], 0, t[q]) * Phi(u_s_p_t_q)
+            # # K_val = K_val / N**2
+            # K_val = K_val / N
             # breakpoint()
             eqs[N**2 + n] = u_0_y_n - f_val - K_val
 
@@ -135,21 +136,23 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             f_val = f(x[m], 0)
 
             K_val = 0
-            for p in range(N):
-                u_s_p_t_q = 0
-                u_s_p_t_q = u_approx_x_0[p]
-                K_val += K(x[m], 0, s[p], 0) * Phi(u_s_p_t_q)
-            K_val = K_val / N**2
+            # for p in range(m):  # for Volterra, the upper limit is m
+            #     u_s_p_t_q = 0
+            #     u_s_p_t_q = u_approx_x_0[p]
+            #     K_val += K(x[m], 0, s[p], 0) * Phi(u_s_p_t_q)
+            # # K_val = K_val / N**2
+            # K_val = K_val / N
             eqs[N**2 + N + m] = u_x_0_m - f_val - K_val
 
         # N ** 2 + 2N + 1 eq, which is u(0, 0)
         u_0_0 = coefs_const
         f_val = f(0, 0)
-        K_val = 0
-        u_s_p_t_q = 0
-        u_s_p_t_q = coefs_const
-        K_val += K(0, 0, 0, 0) * Phi(coefs_const)
-        K_val = K_val / N**2
+        # K_val = 0   # Consider the case when x=0, y=0, 
+                        #  the integral is 0 due to the vanishing of the kernel
+        # u_s_p_t_q = 0
+        # u_s_p_t_q = coefs_const 
+        # K_val += K(0, 0, 0, 0) * Phi(coefs_const)
+        # K_val = K_val / N**2
         eqs[-1] = u_0_0 - f_val - K_val
 
         return eqs
@@ -221,8 +224,7 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             u_haar_approx += coefs_d[i] * HOHWM.haar_int_1(x[0], i + 1)
         u_haar_approx += coefs_const
 
-        # DISCUSS: why we need this fraction?
-        u_haar_approx = u_haar_approx / N
+        # u_haar_approx = u_haar_approx / N
 
         return u_haar_approx
 
@@ -231,12 +233,12 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
 
 if __name__ == "__main__":
 
-    f = lambda x, y: x * np.sin(y) + x**5/4 * (np.cos(y) - 1) - x**2 / 4 * np.sin(y)**2
+    f = lambda x, y: x * np.sin(y) + (x**5)/4 * (np.cos(y) - 1) - ((x**2) / 4) * (np.sin(y)**2)
     K = lambda s, t, x, y: x * t**2 + np.cos(s)
     Phi = lambda u: u
     u_true = lambda x, y: x * np.sin(y)
 
-    plot = False
+    plot = True
     
     if plot == True: # have a visual check
     
@@ -280,7 +282,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for 2D Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8]
+    col_size = [2, 4, 8, 16]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -297,7 +299,7 @@ if __name__ == "__main__":
         file.write("Iterative method for 2D Nonlinear Volterra equation\n")
         file.write("\n")
 
-    test_x = [0.5, 0.5] # test point
+    test_x = [1, 1] # test point
     for method in methods:
         for M in col_size:
             time_start = time.time()
