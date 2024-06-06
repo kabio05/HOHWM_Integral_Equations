@@ -355,7 +355,7 @@ if __name__ == "__main__":
     Phi = lambda u: u**2
     u_true = lambda x: np.exp(x)
 
-    plot = True
+    plot = False
     
     if plot is True:
         # plot the true function and approximate function
@@ -408,7 +408,7 @@ if __name__ == "__main__":
                         K,
                         Phi,
                         method=method,
-                        tol=1e-5,
+                        tol=1e-4,
                         max_iter=500,
                         verbose=False,
                     )
@@ -419,7 +419,7 @@ if __name__ == "__main__":
                         K,
                         Phi,
                         method=method,
-                        tol=1e-5,
+                        tol=1e-4,
                         max_iter=500,
                         verbose=False,
                     )
