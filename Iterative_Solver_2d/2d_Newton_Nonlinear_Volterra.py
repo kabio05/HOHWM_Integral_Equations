@@ -100,8 +100,8 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
                 f_val = f(x[m], y[n])
 
                 K_val = 0
-                for p in range(m):
-                    for q in range(n):
+                for p in range(m+1):
+                    for q in range(n+1):
                         u_s_p_t_q = 0
                         # we can do this is because the collocation points
                         # are the same for x, y and s, t
@@ -119,13 +119,6 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             f_val = f(0, y[n])
 
             K_val = 0
-            # for q in range(n):   # for Volterra, the upper limit is n
-            #     u_s_p_t_q = 0
-            #     u_s_p_t_q = u_approx_0_y[q]
-            #     K_val += K(0, y[n], 0, t[q]) * Phi(u_s_p_t_q)
-            # # K_val = K_val / N**2
-            # K_val = K_val / N
-            # breakpoint()
             eqs[N**2 + n] = u_0_y_n - f_val - K_val
 
         # N ** 2 + N to N ** 2 + 2N eqs, which are u(x, 0)
@@ -136,23 +129,12 @@ def Volterra_2d(N, f, K, Phi, method="LU", tol=1e-8, max_iter=100, verbose=False
             f_val = f(x[m], 0)
 
             K_val = 0
-            # for p in range(m):  # for Volterra, the upper limit is m
-            #     u_s_p_t_q = 0
-            #     u_s_p_t_q = u_approx_x_0[p]
-            #     K_val += K(x[m], 0, s[p], 0) * Phi(u_s_p_t_q)
-            # # K_val = K_val / N**2
-            # K_val = K_val / N
             eqs[N**2 + N + m] = u_x_0_m - f_val - K_val
 
         # N ** 2 + 2N + 1 eq, which is u(0, 0)
         u_0_0 = coefs_const
         f_val = f(0, 0)
-        # K_val = 0   # Consider the case when x=0, y=0, 
-                        #  the integral is 0 due to the vanishing of the kernel
-        # u_s_p_t_q = 0
-        # u_s_p_t_q = coefs_const 
-        # K_val += K(0, 0, 0, 0) * Phi(coefs_const)
-        # K_val = K_val / N**2
+        K_val = 0
         eqs[-1] = u_0_0 - f_val - K_val
 
         return eqs
@@ -282,7 +264,7 @@ if __name__ == "__main__":
     if print_results is True:
         print("Iterative method for 2D Nonlinear Volterra equation")
 
-    col_size = [2, 4, 8, 16]
+    col_size = [2, 4, 8]
     err_local = np.zeros(len(col_size))
     err_global = np.zeros(len(col_size))
     iters = np.zeros(len(col_size))
@@ -299,7 +281,7 @@ if __name__ == "__main__":
         file.write("Iterative method for 2D Nonlinear Volterra equation\n")
         file.write("\n")
 
-    test_x = [1, 1] # test point
+    test_x = [0.5, 0.5] # test point
     for method in methods:
         for M in col_size:
             time_start = time.time()
